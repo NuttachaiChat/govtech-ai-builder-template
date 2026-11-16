@@ -1,12 +1,13 @@
-# Use cases
+# Scenarios
 
-At the orientation on Tue 10 Nov, each group takes one case. Groups 1 to 4 take the four examples below, and no two groups take the same one. Group 5 takes the fifth case, announced at that orientation. Write the use case name (from the Name column) in `GROUP.md`.
+There are three scenarios. Each learner picks one on Day 1, before Module 2, and uses it in every lab through Day 4. The work is individual, so several learners can pick the same scenario. Groups discuss, compare and Show and Swap, but each learner keeps their own scenario and repo.
 
-All four examples use synthetic data. Invent records. Do not paste a real enquiry, a real application, or a real policy.
+Write your pick in `SCENARIO-PICK.md`. The full status quo for each scenario is in the Final Project Brief on the learning platform.
 
-| Name | File | Level | One line |
-|---|---|---|---|
-| Policy brief skill file | [policy-brief-skill-file.md](policy-brief-skill-file.md) | Beginner | A skill file that turns a long note into a one-page brief. |
-| Enquiry triage agent | [enquiry-triage-agent.md](enquiry-triage-agent.md) | Intermediate | An agent that drafts a category, a priority, and a reply. A person sends it. |
-| Application helper | [application-helper.md](application-helper.md) | Intermediate | A helper that explains the next question and flags missing fields. It never submits. |
-| Rubric for AI summaries | [feedback-review-rubric.md](feedback-review-rubric.md) | Advanced | A rubric for AI-written summaries of public comments. |
+Synthetic data only. Use made-up versions of any numbers and quotes, and label anything you invent as made up. Never paste a real enquiry, a real application, a real student record or an internal document.
+
+| Name | File | One line |
+|---|---|---|
+| A: ServiceSG enquiry response | [servicesg-enquiry-response.md](servicesg-enquiry-response.md) | Help officers find the right policy and give residents a correct, consistent reply. |
+| B: ICA passport applications and renewals | [ica-passport-applications.md](ica-passport-applications.md) | Replace an online channel that is closing and cut returns for errors or missing documents. |
+| C: MOE lower secondary biology curriculum | [moe-lower-secondary-biology.md](moe-lower-secondary-biology.md) | Help teachers turn a revised curriculum into lessons and assessments in time. |
