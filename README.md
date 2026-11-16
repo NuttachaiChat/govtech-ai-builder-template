@@ -1,50 +1,54 @@
 # GovTech AI builder
 
-Your group's final project for the four-day GovTech Singapore course. The repo holds one use case and the module folders for the seven deliverables.
+This is the course repo for the four-day GovTech Singapore AI product onsite. Make your own private copy named `govtech-ai-project` from this template, then work in it in the Claude desktop app, Code tab.
 
-This repo is already yours. Do not open Terminal or PowerShell, and do not type git or gh commands. At the end of each module, ask Claude, in the Claude app's Code tab, to send that module's file to main. Then click Merge pull request so the file is on main.
+The work is individual. You pick one scenario on Day 1 and stay on it for all four days. Your One Pager and the files you build in each module are your final project.
 
-On Day 4 you build the presentation from these files. The presentation file is not in the repo yet.
+You never open Terminal or PowerShell, and you never type git or gh commands. Claude does that work for you.
+
+## Pick your scenario
+
+Read `use-cases/README.md` and choose Scenario A, B or C before Module 2. Write your pick in `SCENARIO-PICK.md` and on the Use case line of `one-pager.md`. The full scenario details are in the Final Project Brief on the learning platform.
+
+## Save rule
+
+In the Claude desktop app, Code tab, with `govtech-ai-project` selected, ask Claude to save each file on main. Claude opens a pull request into main and merges it. You never click Merge yourself. Open the github.com link Claude gives you and check the saved path is on main. If Claude cannot merge, raise it with your instructor.
 
 ## Data rule
 
-Synthetic data only. Invent a fictional desk, fictional residents, and fictional applications. No government data, no real resident or staff records, and no internal documents.
+Synthetic data only. Never put real resident data, real case records, credentials or internal documents in this repo. Label anything you invent as made up. If you are unsure, leave it out and ask your instructor.
 
-## Pick a use case
+## Folders
 
-Read `use-cases/README.md`. The group writes the use case name (from the Name column) in `GROUP.md`. No two groups take the same use case. No names of people in `GROUP.md`.
+- `one-pager.md`: the spine of your final project. You fill one part a day.
+- `SCENARIO-PICK.md`: the scenario you picked on Day 1.
+- `use-cases/`: the three scenarios.
+- `CLAUDE.md`: instructions Claude reads in the Code tab when you open this repo.
+- `day1-discover-define/`: skill file, opportunity notes, AI UX flow.
+- `day2-validate/`: prototype, prompt chain, Living PRD and handoff note.
+- `day3-build/`: agent spec, agent control panel, harness sketch, AI PRD.
+- `day4-measure/`: metrics plan, eval rubric, eval gates.
+- `day4-measure/data/synthetic-usage.csv`: a made-up dataset for the Day 4 lab.
 
-## Deliverables
+## What your repo holds by Day 4
 
-| # | Deliverable | Folder |
+| Deliverable | Built in | File |
 |---|---|---|
-| 1 | The problem worth solving with AI | `02-idea/problem.md`, `08-validation/validation-brief.md` |
-| 2 | AI context and requirements | `01-context/skill-file.md`, `03-ai-prd/prd.md` |
-| 3 | Agent autonomy and human checkpoints | `04-agent/agent-control-panel.md` |
-| 4 | Evals that define good enough | `05-evals/human-rubric.md`, `06-metrics/metrics-plan.md` |
-| 5 | A prototype that tests the riskiest assumption | `07-prototype/`, `08-validation/prototype-v3.md`, `09-chaining/PROMPTS.md`, `app/` |
-| 6 | A production spec | `10-production-spec/`, `11-data-and-deploy/` |
-| 7 | A data-backed call: continue, pivot, or stop | `12-decision/decision.md` |
+| Skill file | Day 1, Module 1 | `day1-discover-define/skill-file.md` |
+| One Pager: problem, status quo, success metrics | Day 1, Module 2 | `one-pager.md` |
+| AI UX flow | Day 1, Module 3 | `day1-discover-define/ai-ux-flow.md` |
+| Prototype and prompt chain | Day 2, Modules 4 and 5 | `day2-validate/prototype/`, `day2-validate/PROMPTS.md` |
+| One Pager: risks | Day 2, Module 5 | `one-pager.md` |
+| Living PRD and handoff note | Day 2, Module 6 | `day2-validate/living-prd.md`, `day2-validate/handoff-note.md` |
+| Agent spec, control panel, instruction file | Day 3, Module 7 | `day3-build/` |
+| Harness sketch and AI PRD | Day 3, Module 8 | `day3-build/ai-prd.md` |
+| One Pager: strategy and roadmap | Day 3, Module 9 | `one-pager.md` |
+| Metrics plan, eval rubric, eval gates | Day 4, Modules 10 to 12 | `day4-measure/` |
+| One Pager: open issues and the continue, pivot or stop call | Day 4, Module 12 | `one-pager.md` |
+| Final presentation (optional upload) | Day 4, Finalize | `final-presentation.html` |
 
-## Module map
+Each lab guide names the exact file to save.
 
-| Module | Day | Send to main |
-|---|---|---|
-| 1 Giving AI the right context | Day 1 | `01-context/skill-file.md` |
-| 2 Choosing which AI ideas are worth building | Day 1 | `02-idea/problem.md`, `02-idea/prototype.md` |
-| 3 Writing AI requirements engineers can build from | Day 1 | `03-ai-prd/prd.md` |
-| 4 Deciding when an agent acts on its own | Day 2 | `04-agent/agent-control-panel.md` |
-| 5 Scoring AI output with clear rubrics | Day 2 | `05-evals/human-rubric.md` |
-| 6 Proving an AI feature is worth keeping | Day 2 | `06-metrics/metrics-plan.md` |
-| 7 Building a working prototype in one session | Day 3 | `07-prototype/` |
-| 8 Testing the riskiest assumption first | Day 3 | `08-validation/` |
-| 9 Chaining prompts so results stay stable | Day 3 | `09-chaining/PROMPTS.md` |
-| 10 Turning a prototype into a production spec | Day 4 | `10-production-spec/` |
-| 11 Adding data, access rules, and a live deploy | Day 4 | `11-data-and-deploy/` |
-| 12 Using data to decide whether to continue, pivot, or stop | Day 4 | `12-decision/decision.md` |
+## Certificate and upload
 
-## Hand-in
-
-Submit this repo's URL and the Day 4 presentation on the learning platform within 7 days of the last day.
-
-A certificate needs 80% attendance, presenting on Day 4, and uploading the final repo with all 7 deliverables.
+The certificate needs 80% attendance of all sessions. The final upload is optional: if you choose, upload `final-presentation.html` to the learning platform. Upload the file, never a link to your private repo.
