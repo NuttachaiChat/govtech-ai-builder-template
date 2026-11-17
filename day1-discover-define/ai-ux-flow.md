@@ -39,3 +39,20 @@ How we measure trust (Expert)
 * User trust: Percentage of applicants who understand and find AI suggestions helpful.
 * Override rate: Percentage of AI suggestions dismissed by applicants.
 * Outcome: Reduce the application return rate from the current 17% baseline, without increasing application abandonment.
+
+## AI-UX readiness
+Scenario: B · ICA passport applications
+Moment: Applicant previews a submission and sees prompts for additional documents / errors to edit
+Level reached: 1 of 3
+What we ship: You cannot pass Level 2 yet, so ship a Level-2 UI: a reliable validator the user can check in under three seconds. A reliable validator beats a magical liar.
+Levels
+
+* Level 01 · Trigger Accuracy: Pass. Prompts appear when documents are missing and/or discrepancies are detected in the submission.
+* Level 02 · System Transparency: Not yet passed. Each error includes a clear explanation, reference to relevant ICA guidelines, and suggested corrective action. Applicants can distinguish mandatory requirements from AI suggestions.
+* Level 03 · Invisible Integration: Not yet passed. A separate validation agent checks AI-generated prompts against ICA rules and the applicant's final submission. ICA officers conduct sample audits to detect missed errors and false positives.
+
+Trust gaps
+
+* Black box: Applicants do not understand why AI flags their information as incorrect. Move: Provide clear explanations for each flagged issue, with references to relevant ICA guidelines.
+* Hallucination: AI may incorrectly flag valid information or documents as errors (false positives). Move: Cross-check AI findings against ICA rules and guidelines, and allow applicants to dismiss incorrect suggestions.
+* Control: Applicants may feel forced to change correct information to satisfy AI checks. Move: Clearly distinguish mandatory errors from AI suggestions, and allow applicants to override AI recommendations or request human review.
