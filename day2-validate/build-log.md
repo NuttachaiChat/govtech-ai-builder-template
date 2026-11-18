@@ -121,3 +121,25 @@ To move forward, the prototype must prove:
 1. **Usability** - Real applicants can understand and fix errors without support (70%+ success rate)
 2. **Accuracy** - Precision/recall documented for each error type, with plan for false positives/negatives
 3. **Trust & Safety** - Staged rollout, guardrails, human review option, and political risk mitigation
+
+---
+
+## Riskiest Assumption to Test
+
+**Market Assumption:** Applicants can understand and act on AI-generated error prompts to correct their submissions accurately, without increasing completion time or requiring additional support.
+
+**Risk Type:** Usability
+
+**Kill Switch:** When applicants get stuck on AI-generated prompts or make incorrect edits after receiving guidance, indicating the prompts are not clear enough or actionable.
+
+**Kill-Switch Signal:**
+- Less than 70% of test participants can successfully fix flagged errors without calling support
+- Average completion time increases beyond current baseline (22 minutes)
+- Participants express confusion about what action to take ("What does 'white background' mean?", "How do I fix this?")
+- Participants make incorrect corrections (e.g., crop photo incorrectly, upload wrong document type)
+
+**Success Signal:** 
+- 70%+ of test participants successfully fix all flagged errors without external help
+- Completion time stays at or below 22 minutes
+- Participants report confidence in understanding what went wrong and how to fix it
+- Re-submission rate for AI-reviewed applications is lower than control group
