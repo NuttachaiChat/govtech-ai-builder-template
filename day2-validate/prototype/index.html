@@ -4,14 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Passport Application Preview - ICA (Prototype)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <div class="logo">ICA</div>
+      <div class="logo">
+        <div class="logo-icon">ICA</div>
+        <div class="logo-text">
+          <strong>Immigration & Checkpoints Authority</strong>
+          Singapore Government
+        </div>
+      </div>
       <h1>Passport Application Preview</h1>
       <p class="subtitle">Please review your application before submitting</p>
+    </header>
+
+    <div class="progress-section">
       <div class="progress-bar">
         <div class="progress-fill"></div>
       </div>
@@ -19,111 +31,119 @@
         <span>2 of 4 documents verified</span>
         <span>50% complete</span>
       </div>
-    </header>
-
-    <div class="notice synthetic-notice">
-      🧪 All data on this page is synthetic and made up for testing purposes only.
     </div>
 
-    <section class="alert-box">
-      <div class="alert-header">
-        <span class="alert-icon">!</span>
-        <h2>2 issues need your attention</h2>
-      </div>
-      <p>Please fix the following issues before submitting your application.</p>
-    </section>
-
-    <section class="application-summary">
-      <h3>Application Summary</h3>
-      <div class="summary-grid">
-        <div class="summary-item">
-          <span class="label">Application Type</span>
-          <span class="value">Passport Renewal (Child)</span>
-        </div>
-        <div class="summary-item">
-          <span class="label">Applicant Name</span>
-          <span class="value">Tan Wei Lin (Synthetic)</span>
-        </div>
-        <div class="summary-item">
-          <span class="label">Date of Birth</span>
-          <span class="value">15 Mar 2018</span>
-        </div>
-        <div class="summary-item">
-          <span class="label">Parent/Guardian</span>
-          <span class="value">Tan Ah Kow (Synthetic)</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="errors-section">
-      <h3>Issues to Fix</h3>
-
-      <div class="error-card error">
-        <div class="error-badge">Missing Document</div>
-        <h4>Child's Birth Certificate not uploaded</h4>
-        <p class="error-description">
-          For passport renewal of a child under 16, the child's birth certificate is required to verify parental consent.
-        </p>
-        <div class="error-reference">
-          <span class="reference-label">ICA Requirement:</span>
-          <a href="#">Document Checklist for Child Passport Renewal</a>
-        </div>
-        <div class="error-action">
-          <strong>What to do:</strong> Upload a clear copy of the child's birth certificate (Singapore or foreign birth certificate with translation if applicable).
-        </div>
-        <button class="btn btn-primary">Upload Document</button>
+    <div class="main-content">
+      <div class="synthetic-notice">
+        🧪 All data on this page is synthetic and made up for testing purposes only.
       </div>
 
-      <div class="error-card warning">
-        <div class="error-badge warning-badge">Discrepancy Detected</div>
-        <h4>Photo may not meet requirements</h4>
-        <p class="error-description">
-          The uploaded photo appears to have a coloured background. Passport photos must have a plain white background.
-        </p>
-        <div class="error-reference">
-          <span class="reference-label">ICA Requirement:</span>
-          <a href="#">Photo Requirements for Singapore Passport</a>
+      <section class="alert-box">
+        <div class="alert-header">
+          <span class="alert-icon">!</span>
+          <h2>2 issues need your attention</h2>
         </div>
-        <div class="error-action">
-          <strong>What to do:</strong> Upload a new photo with a plain white background. The photo should be taken within the last 3 months.
+        <p>Please fix the following issues before submitting your application.</p>
+      </section>
+
+      <section class="application-summary">
+        <h3>Application Summary</h3>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label">Application Type</span>
+            <span class="value">Passport Renewal (Child)</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Applicant Name</span>
+            <span class="value">Tan Wei Lin (Synthetic)</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Date of Birth</span>
+            <span class="value">15 Mar 2018</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Parent/Guardian</span>
+            <span class="value">Tan Ah Kow (Synthetic)</span>
+          </div>
         </div>
-        <button class="btn btn-secondary">Replace Photo</button>
+      </section>
+
+      <section class="errors-section">
+        <h3>Issues to Fix</h3>
+
+        <div class="error-card error">
+          <div class="error-badge">Missing Document</div>
+          <h4>Child's Birth Certificate not uploaded</h4>
+          <p class="error-description">
+            For passport renewal of a child under 16, the child's birth certificate is required to verify parental consent.
+          </p>
+          <div class="error-reference">
+            <span class="reference-label">ICA Requirement:</span>
+            <a href="#">Document Checklist for Child Passport Renewal</a>
+          </div>
+          <div class="error-action">
+            <strong>What to do:</strong>
+            Upload a clear copy of the child's birth certificate (Singapore or foreign birth certificate with translation if applicable).
+          </div>
+          <button class="btn btn-primary">Upload Document</button>
+        </div>
+
+        <div class="error-card warning">
+          <div class="error-badge warning-badge">Discrepancy Detected</div>
+          <h4>Photo may not meet requirements</h4>
+          <p class="error-description">
+            The uploaded photo appears to have a coloured background. Passport photos must have a plain white background.
+          </p>
+          <div class="error-reference">
+            <span class="reference-label">ICA Requirement:</span>
+            <a href="#">Photo Requirements for Singapore Passport</a>
+          </div>
+          <div class="error-action">
+            <strong>What to do:</strong>
+            Upload a new photo with a plain white background. The photo should be taken within the last 3 months.
+          </div>
+          <button class="btn btn-secondary">Replace Photo</button>
+        </div>
+      </section>
+
+      <section class="documents-uploaded">
+        <h3>Documents Uploaded</h3>
+        <ul class="document-list">
+          <li class="document-item valid">
+            <span class="status-icon">✓</span>
+            <span class="doc-name">Parent's NRIC (Front & Back)</span>
+            <span class="status-text">Verified</span>
+          </li>
+          <li class="document-item valid">
+            <span class="status-icon">✓</span>
+            <span class="doc-name">Child's Existing Passport</span>
+            <span class="status-text">Verified</span>
+          </li>
+          <li class="document-item missing">
+            <span class="status-icon">✗</span>
+            <span class="doc-name">Child's Birth Certificate</span>
+            <span class="status-text">Missing</span>
+          </li>
+          <li class="document-item warning">
+            <span class="status-icon">!</span>
+            <span class="doc-name">Passport Photo</span>
+            <span class="status-text">Needs Review</span>
+          </li>
+        </ul>
+      </section>
+
+      <footer class="actions">
+        <button class="btn btn-outline" disabled>Submit Application</button>
+        <p class="footer-note">Fix all issues above to enable submission</p>
+      </footer>
+
+      <div class="prototype-label">
+        PROTOTYPE · Scenario B · ICA Passport Applications · All data is synthetic
       </div>
-    </section>
+    </div>
 
-    <section class="documents-uploaded">
-      <h3>Documents Uploaded</h3>
-      <ul class="document-list">
-        <li class="document-item valid">
-          <span class="status-icon">✓</span>
-          <span class="doc-name">Parent's NRIC (Front & Back)</span>
-          <span class="status-text">Verified</span>
-        </li>
-        <li class="document-item valid">
-          <span class="status-icon">✓</span>
-          <span class="doc-name">Child's Existing Passport</span>
-          <span class="status-text">Verified</span>
-        </li>
-        <li class="document-item missing">
-          <span class="status-icon">✗</span>
-          <span class="doc-name">Child's Birth Certificate</span>
-          <span class="status-text">Missing</span>
-        </li>
-        <li class="document-item warning">
-          <span class="status-icon">!</span>
-          <span class="doc-name">Passport Photo</span>
-          <span class="status-text">Needs Review</span>
-        </li>
-      </ul>
-    </section>
-
-    <footer class="actions">
-      <button class="btn btn-outline" disabled>Submit Application</button>
-      <p class="footer-note">Fix all issues above to enable submission</p>
-    </footer>
-
-    <div class="prototype-label">
-      PROTOTYPE · Scenario B · ICA Passport Applications · All data is synthetic
+    <div class="gov-footer">
+      © 2026 Government of Singapore · <a href="#">Terms of Use</a> · <a href="#">Privacy</a>
     </div>
   </div>
 </body>
