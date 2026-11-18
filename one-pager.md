@@ -1,9 +1,39 @@
 # One Pager
 
-Use case: [your chosen scenario (A, B, or C), written with synthetic data only]
+Use case: Scenario B · ICA Passport Applications (all data synthetic)
 
 ## Problem and user
+
+**Problem:** Applicants do not know what a complete application looks like for their situation, leading to 17% of submissions having errors or missing documents.
+
+**User:** Applicants submitting passport applications and renewals to ICA, especially parents renewing passports for children under 16.
+
+**User quote (synthetic):** "The time to renew my passport is longer than my trip! It is unclear what do I need to submit."
+
+**Status quo:** 
+- 17% error rate for applications with errors or missing documents
+- Each return adds approximately 6 days to processing time
+- Only 38% of applicants read the guidance before they apply
+- Applicants submit, get rejected, resubmit (frustrating for citizens, inefficient for ICA)
+
 ## Opportunity and evidence
+
+**Opportunity:** Check submissions for errors and missing documents BEFORE applicants submit to ICA officers.
+
+**Goal:** Reduce submission errors or missing documents by half from 17% to ~8.5%
+
+**Hypothesis:** Applicants will edit their submission when they receive prompts about errors, and make correct edits.
+
+**Evidence (synthetic):**
+- Current error rate: 17%
+- Only 38% read guidance before applying
+- Each return adds ~6 days delay
+
+**Success metrics:**
+- 9 in 10 applications (90%) are submitted with complete info and documents
+- Target: Reduce error rate from 17% to ≤10% within first month of pilot
+- No increase in completion time (stay at or below 22-minute baseline)
+- No increase in support call volume
 ## Experience and trust
 ## Risks (market, technical, team)
 
