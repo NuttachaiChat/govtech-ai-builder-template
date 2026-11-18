@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usability Test Scenario - ICA Passport Application</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .test-banner {
+      background: #E8F4FD;
+      border: 2px solid #2563EB;
+      padding: 16px 32px;
+      margin-bottom: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1E40AF;
+    }
+
+    .test-instructions {
+      background: white;
+      padding: 24px 32px;
+      border-bottom: 2px solid #E5E7EB;
+    }
+
+    .test-instructions h2 {
+      font-size: 18px;
+      color: #1C3F6E;
+      margin-bottom: 12px;
+    }
+
+    .test-instructions p {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .test-instructions ul {
+      margin-left: 20px;
+      margin-top: 12px;
+    }
+
+    .test-instructions li {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .scenario-box {
+      background: #FFFBEB;
+      border: 2px solid #F59E0B;
+      border-left: 4px solid #F59E0B;
+      padding: 16px 20px;
+      margin: 20px 32px;
+      border-radius: 4px;
+    }
+
+    .scenario-box h3 {
+      font-size: 15px;
+      color: #92400E;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .scenario-box p {
+      font-size: 14px;
+      color: #78350F;
+      margin-bottom: 4px;
+    }
+
+    .task-counter {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      border: 2px solid #1C3F6E;
+      border-radius: 8px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    .task-counter h4 {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .task-counter .time {
+      font-size: 24px;
+      color: #1C3F6E;
+      font-weight: 700;
+    }
+
+    .success-message {
+      background: #F0FDF4;
+      border: 2px solid #16A34A;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 32px;
+      display: none;
+    }
+
+    .success-message h3 {
+      color: #166534;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .success-message p {
+      color: #15803D;
+      font-size: 14px;
+    }
+
+    .interactive-note {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      padding: 12px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="test-banner">
+      📋 USABILITY TEST SCENARIO - All data is synthetic and made up for testing purposes
+    </div>
+
+    <div class="test-instructions">
+      <h2>Test Objective</h2>
+      <p><strong>Can applicants understand and fix AI-generated error prompts without support?</strong></p>
+
+      <p style="margin-top: 12px;">This prototype tests whether users can:</p>
+      <ul>
+        <li>Understand what went wrong with their application</li>
+        <li>Know what action to take to fix each error</li>
+        <li>Complete the fixes without calling support or asking for help</li>
+        <li>Finish within the baseline completion time (22 minutes)</li>
+      </ul>
+
+      <p style="margin-top: 16px; font-weight: 600; color: #1C3F6E;">
+        Success = Fix both errors correctly, submit application, time ≤ 22 minutes
+      </p>
+    </div>
+
+    <div class="scenario-box">
+      <h3>🎭 Your Role (Synthetic Scenario)</h3>
+      <p><strong>You are:</strong> Tan Ah Kow, a parent renewing your 8-year-old child's passport (Tan Wei Lin)</p>
+      <p><strong>Context:</strong> You've filled out the application and uploaded documents. Now you're previewing before submission.</p>
+      <p><strong>Goal:</strong> Fix any errors flagged by the system and submit the application successfully.</p>
+    </div>
+
+    <div class="task-counter">
+      <h4>Time Elapsed</h4>
+      <div class="time" id="timer">00:00</div>
+    </div>
+
+    <div class="synthetic-banner">
+      🧪 All data on this page is synthetic and made up for testing purposes only.
+    </div>
+
+    <header>
+      <div class="logo">
+        <div class="logo-icon">ICA</div>
+        <div class="logo-text">
+          <strong>Immigration & Checkpoints Authority</strong>
+          Singapore Government
+        </div>
+      </div>
+      <h1>Passport Application Preview</h1>
+      <p class="subtitle">Please review your application before submitting</p>
+    </header>
+
+    <div class="progress-section">
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="progress-text">
+        <span>2 of 4 documents verified</span>
+        <span>50% complete</span>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <section class="alert-box">
+        <div class="alert-header">
+          <span class="alert-icon">!</span>
+          <h2>2 issues need your attention</h2>
+        </div>
+        <p>Please fix the following issues before submitting your application.</p>
+      </section>
+
+      <section class="errors-section">
+        <h3>Issues to Fix</h3>
+
+        <div class="error-card error">
+          <div class="error-badge">Missing Document</div>
+          <h4>Child's Birth Certificate not uploaded</h4>
+          <p class="error-description">
+            For passport renewal of a child under 16, the child's birth certificate is required to verify parental consent.
+          </p>
+          <div class="error-reference">
+            <span class="reference-label">ICA Requirement:</span>
+            <a href="#">Document Checklist for Child Passport Renewal</a>
+          </div>
+          <div class="error-action">
+            <strong>What to do:</strong>
+            Upload a clear copy of the child's birth certificate (Singapore or foreign birth certificate with translation if applicable).
+          </div>
+          <button class="btn btn-primary" onclick="handleUpload('birth-cert')">Upload Document</button>
+        </div>
+
+        <div class="error-card warning">
+          <div class="error-badge warning-badge">Discrepancy Detected</div>
+          <h4>Photo may not meet requirements</h4>
+          <p class="error-description">
+            The uploaded photo appears to have a coloured background. Passport photos must have a plain white background.
+          </p>
+          <div class="error-reference">
+            <span class="reference-label">ICA Requirement:</span>
+            <a href="#">Photo Requirements for Singapore Passport</a>
+          </div>
+          <div class="error-action">
+            <strong>What to do:</strong>
+            Upload a new photo with a plain white background. The photo should be taken within the last 3 months.
+          </div>
+          <button class="btn btn-secondary" onclick="handleUpload('photo')">Replace Photo</button>
+        </div>
+      </section>
+
+      <section class="application-summary">
+        <h3>Application Summary</h3>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label">Applicant Name</span>
+            <span class="value">Tan Wei Lin (Synthetic)</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Application Type</span>
+            <span class="value">Passport Renewal (Child)</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Parent/Guardian</span>
+            <span class="value">Tan Ah Kow (Synthetic)</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Date of Birth</span>
+            <span class="value">15 Mar 2018</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="documents-uploaded">
+        <h3>Documents Uploaded</h3>
+        <ul class="document-list">
+          <li class="document-item valid">
+            <span class="status-icon">✓</span>
+            <span class="doc-name">Parent's NRIC (Front & Back)</span>
+            <span class="status-text">Verified</span>
+          </li>
+          <li class="document-item valid">
+            <span class="status-icon">✓</span>
+            <span class="doc-name">Child's Existing Passport</span>
+            <span class="status-text">Verified</span>
+          </li>
+          <li class="document-item missing" id="birth-cert-status">
+            <span class="status-icon">✗</span>
+            <span class="doc-name">Child's Birth Certificate</span>
+            <span class="status-text">Missing</span>
+          </li>
+          <li class="document-item warning" id="photo-status">
+            <span class="status-icon">!</span>
+            <span class="doc-name">Passport Photo</span>
+            <span class="status-text">Needs Review</span>
+          </li>
+        </ul>
+      </section>
+
+      <div class="success-message" id="success-msg">
+        <h3>✅ Test Completed Successfully!</h3>
+        <p>You fixed both errors and submitted the application in <strong id="final-time"></strong></p>
+        <p style="margin-top: 8px;">This demonstrates that the error prompts were clear and actionable.</p>
+      </div>
+
+      <footer class="actions">
+        <button class="btn btn-outline" id="submit-btn" disabled onclick="handleSubmit()">Submit Application</button>
+        <p class="footer-note" id="footer-note">Fix all issues above to enable submission</p>
+      </footer>
+
+      <p class="interactive-note">
+        Note: This is a clickable prototype. Buttons simulate fixing errors to test if prompts are understandable.
+      </p>
+
+      <div class="prototype-label">
+        USABILITY TEST · Scenario B · ICA Passport Applications · All data is synthetic
+      </div>
+    </div>
+
+    <div class="gov-footer">
+      © 2026 Government of Singapore · <a href="#">Terms of Use</a> · <a href="#">Privacy</a>
+    </div>
+  </div>
+
+  <script>
+    let startTime = Date.now();
+    let birthCertFixed = false;
+    let photoFixed = false;
+
+    // Timer
+    setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      document.getElementById('timer').textContent =
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }, 1000);
+
+    function handleUpload(type) {
+      if (type === 'birth-cert') {
+        birthCertFixed = true;
+        const item = document.getElementById('birth-cert-status');
+        item.className = 'document-item valid';
+        item.innerHTML = `
+          <span class="status-icon">✓</span>
+          <span class="doc-name">Child's Birth Certificate</span>
+          <span class="status-text">Verified</span>
+        `;
+        document.querySelector('.error-card.error').style.display = 'none';
+      } else if (type === 'photo') {
+        photoFixed = true;
+        const item = document.getElementById('photo-status');
+        item.className = 'document-item valid';
+        item.innerHTML = `
+          <span class="status-icon">✓</span>
+          <span class="doc-name">Passport Photo</span>
+          <span class="status-text">Verified</span>
+        `;
+        document.querySelector('.error-card.warning').style.display = 'none';
+      }
+
+      checkIfComplete();
+    }
+
+    function checkIfComplete() {
+      if (birthCertFixed && photoFixed) {
+        document.getElementById('submit-btn').disabled = false;
+        document.getElementById('submit-btn').className = 'btn btn-primary';
+        document.getElementById('footer-note').textContent = 'All issues resolved - ready to submit';
+        document.querySelector('.alert-box').style.display = 'none';
+        document.querySelector('.errors-section').style.display = 'none';
+
+        // Update progress
+        document.querySelector('.progress-fill').style.width = '100%';
+        document.querySelector('.progress-text').innerHTML = `
+          <span>4 of 4 documents verified</span>
+          <span>100% complete</span>
+        `;
+      }
+    }
+
+    function handleSubmit() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      const timeStr = `${minutes}m ${seconds}s`;
+
+      document.getElementById('final-time').textContent = timeStr;
+      document.getElementById('success-msg').style.display = 'block';
+      document.getElementById('submit-btn').disabled = true;
+      document.getElementById('submit-btn').textContent = 'Application Submitted';
+
+      // Success indication
+      if (elapsed <= 1320) { // 22 minutes = 1320 seconds
+        document.getElementById('success-msg').innerHTML +=
+          `<p style="margin-top: 8px; color: #166534; font-weight: 600;">✓ Within baseline completion time (≤ 22 minutes)</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
