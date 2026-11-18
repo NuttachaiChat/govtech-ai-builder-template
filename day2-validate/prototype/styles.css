@@ -1,7 +1,7 @@
 /*
   ICA Corporate Identity Colors:
-  - Primary Red: #C4122E (ICA/Singapore Government red)
-  - Navy Blue: #1C3F6E (Secondary/accent)
+  - Primary Blue: #1C3F6E (ICA Blue - header)
+  - Accent Red: #C4122E (Alerts, errors)
   - Dark Gray: #333333 (Text)
   - Light Gray: #F5F5F5 (Background)
   - White: #FFFFFF
@@ -27,13 +27,24 @@ body {
   padding: 0;
 }
 
-/* Header - ICA Style */
+/* Synthetic warning banner at top */
+.synthetic-banner {
+  background: #FFF3CD;
+  border-bottom: 2px solid #FFCC00;
+  padding: 12px 32px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #856404;
+  text-align: center;
+}
+
+/* Header - ICA Blue Style */
 header {
-  background: #C4122E;
+  background: #1C3F6E;
   color: white;
   padding: 24px 32px;
   text-align: left;
-  border-bottom: 4px solid #8B0D1F;
+  border-bottom: 4px solid #0F2540;
 }
 
 .logo {
@@ -53,7 +64,7 @@ header {
   justify-content: center;
   font-size: 14px;
   font-weight: 700;
-  color: #C4122E;
+  color: #1C3F6E;
 }
 
 .logo-text {
@@ -116,20 +127,7 @@ h1 {
   padding: 24px 32px;
 }
 
-/* Synthetic notice */
-.synthetic-notice {
-  background: #FFF8E6;
-  border: 1px solid #FFCC00;
-  border-left: 4px solid #FFCC00;
-  border-radius: 4px;
-  padding: 12px 16px;
-  margin-bottom: 24px;
-  font-size: 13px;
-  color: #665500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/* Synthetic notice - now using .synthetic-banner at top */
 
 /* Alert box */
 .alert-box {
