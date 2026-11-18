@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forced Failure Test - AI False Positive Handling</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .test-header {
+      background: #1E293B;
+      color: white;
+      padding: 20px 32px;
+      margin-bottom: 0;
+    }
+
+    .test-header h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .test-header p {
+      font-size: 14px;
+      color: #CBD5E1;
+      margin: 0;
+    }
+
+    .scenario-box {
+      background: #FEF3C7;
+      border-left: 4px solid #F59E0B;
+      padding: 16px 32px;
+      margin-bottom: 0;
+    }
+
+    .scenario-box h3 {
+      font-size: 15px;
+      color: #92400E;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .scenario-box p {
+      font-size: 14px;
+      color: #78350F;
+      margin-bottom: 4px;
+    }
+
+    .ground-truth {
+      background: #DBEAFE;
+      border-left: 4px solid #3B82F6;
+      padding: 16px 32px;
+      margin-bottom: 24px;
+    }
+
+    .ground-truth h3 {
+      font-size: 15px;
+      color: #1E40AF;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .ground-truth ul {
+      margin: 8px 0 0 20px;
+      color: #1E3A8A;
+    }
+
+    .ground-truth li {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .test-step {
+      background: #F9FAFB;
+      border: 2px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 24px 32px;
+    }
+
+    .step-number {
+      display: inline-block;
+      background: #1C3F6E;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: 700;
+      margin-right: 12px;
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1F2937;
+      margin-bottom: 12px;
+    }
+
+    .photo-preview {
+      width: 200px;
+      height: 250px;
+      margin: 16px auto;
+      background: white;
+      border: 2px solid #E5E7EB;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-size: 14px;
+      color: #6B7280;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .photo-preview.valid {
+      border-color: #16A34A;
+      background: #F0FDF4;
+    }
+
+    .ai-analysis {
+      background: #FFFBEB;
+      border: 2px solid #F59E0B;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .ai-analysis h4 {
+      font-size: 15px;
+      color: #92400E;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .ai-result {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0;
+      padding: 12px;
+      background: white;
+      border-radius: 4px;
+    }
+
+    .result-icon {
+      font-size: 24px;
+    }
+
+    .result-text {
+      flex: 1;
+    }
+
+    .result-label {
+      font-weight: 600;
+      color: #92400E;
+      margin-bottom: 2px;
+    }
+
+    .result-detail {
+      font-size: 13px;
+      color: #78350F;
+    }
+
+    .user-decision {
+      background: #EDE9FE;
+      border: 2px solid #7C3AED;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .user-decision h4 {
+      font-size: 15px;
+      color: #5B21B6;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .decision-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .decision-btn {
+      padding: 12px 16px;
+      border: 2px solid #D1D5DB;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .decision-btn:hover {
+      border-color: #1C3F6E;
+      background: #F0F9FF;
+    }
+
+    .decision-btn.selected {
+      border-color: #7C3AED;
+      background: #F5F3FF;
+    }
+
+    .decision-btn strong {
+      display: block;
+      color: #1F2937;
+      margin-bottom: 4px;
+    }
+
+    .decision-btn span {
+      color: #6B7280;
+      font-size: 13px;
+    }
+
+    .system-response {
+      background: #F0FDF4;
+      border: 2px solid #16A34A;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+      display: none;
+    }
+
+    .system-response.show {
+      display: block;
+    }
+
+    .system-response h4 {
+      font-size: 15px;
+      color: #15803D;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .system-response p {
+      font-size: 14px;
+      color: #166534;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .outcome-box {
+      background: #1E293B;
+      color: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 24px 32px;
+      display: none;
+    }
+
+    .outcome-box.show {
+      display: block;
+    }
+
+    .outcome-box h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #10B981;
+    }
+
+    .outcome-box ul {
+      margin: 8px 0 0 20px;
+    }
+
+    .outcome-box li {
+      font-size: 14px;
+      color: #CBD5E1;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="test-header">
+      <h2>🧪 FORCED FAILURE TEST: AI False Positive Handling</h2>
+      <p>Testing Behavior Prompt Requirement: System must handle AI uncertainty transparently and preserve user control</p>
+    </div>
+
+    <div class="scenario-box">
+      <h3>📋 Test Scenario</h3>
+      <p><strong>Situation:</strong> Applicant uploads a VALID passport photo with plain white background</p>
+      <p><strong>AI Error:</strong> System incorrectly flags the photo as having a "coloured background" (FALSE POSITIVE)</p>
+      <p><strong>Expected Behavior:</strong> System allows applicant to proceed without forced re-upload, acknowledges AI may be wrong</p>
+    </div>
+
+    <div class="ground-truth">
+      <h3>✅ Ground Truth (Known to Test Facilitator Only)</h3>
+      <ul>
+        <li>Photo background: RGB (255, 255, 255) - Plain white</li>
+        <li>Face position: Centered</li>
+        <li>Expression: Neutral</li>
+        <li>Lighting: Even, no shadows</li>
+        <li>Photo age: Taken 2 weeks ago</li>
+        <li><strong>Verdict: Photo is 100% compliant with ICA requirements</strong></li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <!-- Step 1: Photo Upload -->
+      <div class="test-step">
+        <div class="step-title">
+          <span class="step-number">1</span>
+          Applicant Uploads Photo
+        </div>
+
+        <div class="photo-preview valid">
+          <div style="font-size: 48px; margin-bottom: 8px;">👤</div>
+          <strong>passport-photo-tan-wei-lin.jpg</strong>
+          <span style="font-size: 12px; color: #16A34A; margin-top: 8px;">✓ Valid photo with white background</span>
+        </div>
+
+        <p style="text-align: center; font-size: 14px; color: #6B7280;">
+          Photo meets all ICA requirements: white background, centered face, neutral expression, taken within 3 months
+        </p>
+      </div>
+
+      <!-- Step 2: AI Analysis -->
+      <div class="test-step">
+        <div class="step-title">
+          <span class="step-number">2</span>
+          AI Validation (Produces False Positive)
+        </div>
+
+        <div class="ai-analysis">
+          <h4>🤖 AI Analysis Running...</h4>
+
+          <div class="ai-result">
+            <span class="result-icon">⚠️</span>
+            <div class="result-text">
+              <div class="result-label">Background Check: Warning Detected</div>
+              <div class="result-detail">Background appears to have slight color tint or shadow (Confidence: 85%)</div>
+            </div>
+          </div>
+
+          <p style="font-size: 13px; color: #78350F; margin-top: 12px;">
+            <strong>Why this happened:</strong> Slight variations in white balance, JPEG compression artifacts, or subtle shadows can trigger AI false positives even when the photo is objectively compliant.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 3: System Presents Warning -->
+      <div class="test-step">
+        <div class="step-title">
+          <span class="step-number">3</span>
+          System Shows Warning to Applicant
+        </div>
+
+        <div class="error-card warning">
+          <div class="error-badge warning-badge">AI Suggestion (85% Confident)</div>
+          <h4>⚠️ Photo May Not Meet Requirements</h4>
+          <p class="error-description">
+            The uploaded photo appears to have a coloured background or shadows. Passport photos must have a plain white background.
+          </p>
+          <p class="error-description" style="margin-top: 12px; padding: 12px; background: #FEF3C7; border-radius: 4px;">
+            <strong>⚠️ Important:</strong> This is an AI-generated suggestion based on image analysis. The AI may be incorrect. If you believe your photo meets ICA requirements, you can choose to proceed.
+          </p>
+          <div class="error-reference">
+            <span class="reference-label">ICA Requirement:</span>
+            <a href="#">Photo Requirements for Singapore Passport</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: User Decision -->
+      <div class="test-step">
+        <div class="step-title">
+          <span class="step-number">4</span>
+          Applicant Makes Decision
+        </div>
+
+        <div class="user-decision">
+          <h4>💭 What would you like to do?</h4>
+
+          <div class="decision-buttons">
+            <button class="decision-btn" onclick="selectOption('replace')">
+              <strong>Replace Photo</strong>
+              <span>Upload a new photo to address the AI's concern</span>
+            </button>
+
+            <button class="decision-btn" onclick="selectOption('keep')">
+              <strong>My Photo is Correct</strong>
+              <span>Proceed with this photo - I believe it meets ICA requirements</span>
+            </button>
+
+            <button class="decision-btn" onclick="selectOption('review')">
+              <strong>Request Human Review</strong>
+              <span>Have an ICA officer verify the photo during processing</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="system-response" id="keep-response">
+          <h4>✅ Photo Accepted - Application Can Proceed</h4>
+          <p>
+            <strong>Your choice has been recorded.</strong> You've indicated this photo meets ICA requirements.
+          </p>
+          <p>
+            An ICA officer will verify the photo during application processing. If the photo meets requirements (as you indicated), your application will proceed normally. If the officer determines the photo doesn't meet requirements, your application may be returned for correction.
+          </p>
+          <p style="margin-top: 12px; font-size: 13px; color: #15803D;">
+            ℹ️ <strong>Note:</strong> You can continue to submit your application. The AI warning will not block your submission.
+          </p>
+        </div>
+
+        <div class="system-response" id="review-response">
+          <h4>✅ Human Review Requested</h4>
+          <p>
+            <strong>Your photo will be reviewed by an ICA officer.</strong> You can continue with your application.
+          </p>
+          <p>
+            The officer will verify whether the photo meets requirements during processing. Review typically takes 1-2 business days. You'll be notified if any issues are found.
+          </p>
+          <p style="margin-top: 12px; font-size: 13px; color: #15803D;">
+            ℹ️ <strong>Note:</strong> You can submit your application now. The review will happen after submission.
+          </p>
+        </div>
+
+        <div class="system-response" id="replace-response" style="background: #EFF6FF; border-color: #3B82F6;">
+          <h4 style="color: #1E40AF;">📸 Upload New Photo</h4>
+          <p style="color: #1E3A8A;">
+            You can upload a new photo. Make sure the background is plain white with no shadows or color tints.
+          </p>
+          <button class="btn btn-primary" style="margin-top: 12px;">Choose New Photo</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Verification -->
+      <div class="test-step" id="verification-step" style="display: none;">
+        <div class="step-title">
+          <span class="step-number">5</span>
+          Verify No Submission Blocking
+        </div>
+
+        <div style="text-align: center; padding: 20px;">
+          <button class="btn btn-primary" onclick="verifySubmission()" style="font-size: 16px; padding: 14px 32px;">
+            Continue to Final Review & Submit
+          </button>
+          <p style="margin-top: 12px; font-size: 13px; color: #6B7280;">
+            This button should be enabled regardless of AI warning
+          </p>
+        </div>
+      </div>
+
+      <!-- Test Outcome -->
+      <div class="outcome-box" id="outcome">
+        <h3>✅ Test Result: PASSED</h3>
+        <ul>
+          <li><strong>AI False Positive Detected:</strong> System flagged a valid photo as non-compliant</li>
+          <li><strong>User Control Preserved:</strong> Applicant given clear options without forcing re-upload</li>
+          <li><strong>Transparency Maintained:</strong> System explicitly stated "AI may be incorrect"</li>
+          <li><strong>No Submission Blocking:</strong> Application can proceed regardless of AI warning</li>
+          <li><strong>Human Review Option:</strong> Applicant can request officer verification</li>
+          <li><strong>Expected Behavior Achieved:</strong> System handles uncertainty gracefully without frustrating the applicant</li>
+        </ul>
+      </div>
+
+      <div class="prototype-label">
+        FORCED FAILURE TEST · Behavior Validation · Scenario B · All data is synthetic
+      </div>
+    </div>
+
+    <div class="gov-footer">
+      © 2026 Government of Singapore · <a href="#">Terms of Use</a> · <a href="#">Privacy</a>
+    </div>
+  </div>
+
+  <script>
+    let selectedOption = null;
+
+    function selectOption(option) {
+      selectedOption = option;
+
+      // Reset all buttons
+      document.querySelectorAll('.decision-btn').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+
+      // Highlight selected
+      event.target.classList.add('selected');
+
+      // Hide all responses
+      document.getElementById('keep-response').classList.remove('show');
+      document.getElementById('review-response').classList.remove('show');
+      document.getElementById('replace-response').classList.remove('show');
+
+      // Show appropriate response
+      if (option === 'keep') {
+        document.getElementById('keep-response').classList.add('show');
+        document.getElementById('verification-step').style.display = 'block';
+      } else if (option === 'review') {
+        document.getElementById('review-response').classList.add('show');
+        document.getElementById('verification-step').style.display = 'block';
+      } else if (option === 'replace') {
+        document.getElementById('replace-response').classList.add('show');
+        document.getElementById('verification-step').style.display = 'none';
+      }
+    }
+
+    function verifySubmission() {
+      document.getElementById('outcome').classList.add('show');
+      document.getElementById('outcome').scrollIntoView({ behavior: 'smooth' });
+
+      setTimeout(() => {
+        alert('✅ TEST PASSED\n\nKey Findings:\n\n1. AI false positive was handled gracefully\n2. User maintained full control over decision\n3. System transparently acknowledged AI may be wrong\n4. No forced re-upload loop\n5. Submission was NOT blocked by AI warning\n6. Officer review option provided as fallback\n\nThis behavior meets the forced failure requirement.');
+      }, 500);
+    }
+  </script>
+</body>
+</html>
