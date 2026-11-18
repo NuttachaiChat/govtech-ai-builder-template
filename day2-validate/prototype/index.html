@@ -67,10 +67,13 @@
         </div>
 
         <div class="error-card warning">
-          <div class="error-badge warning-badge">Discrepancy Detected</div>
+          <div class="error-badge warning-badge">AI Suggestion (85% Confident)</div>
           <h4>Photo may not meet requirements</h4>
           <p class="error-description">
             The uploaded photo appears to have a coloured background. Passport photos must have a plain white background.
+          </p>
+          <p class="error-description" style="margin-top: 8px; font-weight: 600; color: #92400E;">
+            This is an AI-generated suggestion. If you believe your photo is correct, you can proceed.
           </p>
           <div class="error-reference">
             <span class="reference-label">ICA Requirement:</span>
@@ -78,9 +81,13 @@
           </div>
           <div class="error-action">
             <strong>What to do:</strong>
-            Upload a new photo with a plain white background. The photo should be taken within the last 3 months.
+            Choose one option below:
           </div>
-          <button class="btn btn-secondary">Replace Photo</button>
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <button class="btn btn-primary">Replace Photo</button>
+            <button class="btn btn-secondary">My Photo is Correct</button>
+            <button class="btn btn-outline">Request Human Review</button>
+          </div>
         </div>
       </section>
 

@@ -41,7 +41,30 @@ All data is synthetic and labelled as made up.
 - User chooses to proceed despite an AI warning they believe is incorrect.
 - AI validation service is unavailable, requiring fallback to standard application checks.
 
-**Result:** _fill in after you run it: what worked, what broke._
+**Result:**
+
+**What worked:**
+- **Progressive validation flow**: Created upload-flow.html showing document-by-document guidance and validation
+- **Upfront guidance**: Each document section shows requirements BEFORE upload (birth cert rules, photo examples)
+- **Immediate feedback**: Simulated validation happens right after upload (1.5s delay)
+- **Clear distinction**: Mandatory errors vs AI suggestions clearly labeled (badges show "Missing Document" vs "AI Suggestion · 85% Confident")
+- **User control**: Three options for AI warnings: Replace, Keep Original, Request Human Review
+- **Visual examples**: Photo requirements shown with side-by-side good/bad examples
+- **Context-aware**: Guidance tailored to child renewal scenario (mentions parental consent requirement)
+- **No blocking**: AI suggestions never block submission - users can proceed with original uploads
+
+**What broke / Edge cases exposed:**
+- **False positive handling**: If user selects "My Photo is Correct", system accepts but warns officer will review - works as intended but adds processing time
+- **Validation timeout**: No UI for slow network or failed validation - need error state and retry option
+- **Changed circumstances**: If user goes back and changes from "child renewal" to "adult renewal", previously validated documents may need revalidation
+- **Multiple warnings**: Only tested with 2 documents - unclear how overwhelming 4+ warnings would be
+- **Dismissed warnings return**: Final review screen (index.html) still shows the photo warning even if user dismissed it in upload flow - need state persistence
+- **No fallback guidance**: If AI validation unavailable, no clear messaging about falling back to standard checks
+- **Mandatory vs AI unclear**: While badges help, some users may not understand the difference without explanation
+- **Mobile usability**: Side-by-side photo examples may be cramped on small screens
+- **Language**: Examples only in English - no multilingual support shown
+
+**Key learning:** Progressive validation reduces cognitive load (validate one document at a time) but requires careful state management to avoid repeating dismissed warnings.
 
 ## 2. Behavior
 
@@ -88,7 +111,31 @@ Never automatically modify applicant information or make final approval decision
 - User experiences slow or failed validation due to poor connectivity.
 - AI validation service becomes unavailable during the application.
 
-**Result:** _fill in after you run it: what worked, what broke._
+**Result:**
+
+**What worked:**
+- **Forced failure scenario tested**: Created forced-failure-test.html demonstrating AI false positive handling
+- **Transparent communication**: System explicitly states "This is an AI-generated suggestion. The AI may be incorrect."
+- **User control preserved**: Three clear options (Replace, Keep Original, Request Human Review) - no forced action
+- **No submission blocking**: Submission button remains enabled regardless of AI warning
+- **Clear confidence display**: Badge shows "AI Suggestion (85% Confident)" - distinguishes from mandatory errors
+- **Graceful degradation**: If user chooses "My Photo is Correct", system accepts and flags for officer review
+- **Human review fallback**: Explicit option to request officer verification during processing
+- **Educational messaging**: Explains WHY AI might be wrong (compression artifacts, lighting variations)
+
+**What broke / Edge cases exposed:**
+- **False negative handling**: System handles false positives well, but doesn't demonstrate false negatives (missing a real error)
+- **Repeated false positives**: If user uploads 3 different valid photos and AI flags all of them, does system adapt or keep warning?
+- **Officer workload**: If 30% of users choose "My Photo is Correct" to bypass AI warnings, officers must manually review all - defeats efficiency goal
+- **User understanding**: "AI Suggestion 85% Confident" may confuse non-technical users - what does 85% mean to them?
+- **Trust erosion**: If AI is frequently wrong, users may start dismissing ALL warnings including valid ones
+- **No learning feedback**: System doesn't track which dismissed warnings were correct/incorrect to improve AI
+- **Ambiguous outcomes**: "Officer will review during processing" adds 1-2 days but user doesn't know if photo is actually valid
+- **Multiple simultaneous false positives**: If AI incorrectly flags BOTH photo and birth certificate, user may lose confidence in entire system
+- **Mobile friction**: Three-button choice adds cognitive load on small screens
+- **Accessibility**: Screen readers need clear hierarchy between mandatory vs AI suggestions
+
+**Key learning:** Handling false positives transparently works, but creates three risks: (1) Officer review backlog if overused, (2) Users dismissing valid warnings, (3) Trust degradation if AI is frequently wrong. Need to track dismissal accuracy to tune confidence thresholds.
 
 ## 3. Refine
 
@@ -145,4 +192,31 @@ Preserve the existing forced-failure scenario and demonstrate a smooth recovery 
 - Applicant reaches final submission with unresolved AI suggestions.
 - AI validation becomes unavailable, requiring a seamless fallback to standard checks.
 
-**Result:** _fill in after you run it: what worked, what broke._
+**Result:**
+
+**What worked:**
+- **Clean visual hierarchy**: ICA Blue header (#1C3F6E), Red alerts (#C4122E) establish clear government identity
+- **Citizen-friendly language**: Removed technical jargon - used "My Photo is Correct" instead of "Override AI suggestion"
+- **Clear visual indicators**: Color-coded badges (red "Missing Document" vs yellow "AI Suggestion 85% Confident") distinguish error types
+- **Obvious corrective actions**: Button labels use plain language ("Replace Photo", "Keep Original", "Request Human Review")
+- **Progress visibility**: Step indicator shows 4 stages, document status shows verification progress (2 of 4 complete)
+- **Visual examples**: Side-by-side good/bad photo examples show what's acceptable before upload
+- **Minimal clicks**: Validation happens automatically on upload - no extra "Validate" button needed
+- **Contextual guidance**: Birth certificate section explains WHY it's needed ("verify parental consent for children under 16")
+- **Reassurance without over-promising**: "Officer will review during processing" - doesn't claim AI guarantees approval
+
+**What broke / needs refinement:**
+- **Mobile usability untested**: Side-by-side photo examples may not work on small screens (need stacked layout)
+- **"85% Confident" not citizen-friendly**: Technical metric violates plain language goal - should say "AI may be uncertain" instead
+- **Three-second comprehension unclear**: No timing tests conducted to verify users understand prompts that quickly
+- **Repeated warnings issue persists**: State doesn't carry between upload-flow.html and index.html - dismissed warnings reappear
+- **Cognitive load on multiple errors**: Test only shows 2 errors - unclear how 4+ simultaneous warnings would present
+- **No loading states**: Upload → validation shows instant feedback - real network delays need proper loading indicators
+- **Error recovery unclear**: If user dismisses warning then changes their mind, no clear path to bring it back
+- **Accessibility gaps**: No ARIA labels, screen reader testing, or keyboard navigation verification
+- **No multilingual support**: All text in English only - elderly or foreign applicants may struggle
+- **Validation failure state missing**: What happens if AI service is down? No fallback messaging shown
+- **Photo example contrast**: "Correct" and "Not Acceptable" examples too abstract - need real photo mockups
+- **Officer review timeline vague**: "1-2 business days" not specific enough for time-sensitive travel
+
+**Key learning:** Visual polish and plain language improve comprehension, but mobile responsiveness, multilingual support, and accessibility remain unaddressed. The 3-second comprehension goal requires actual usability testing - design alone doesn't guarantee it.
