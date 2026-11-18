@@ -378,17 +378,17 @@
           <h4>💭 What would you like to do?</h4>
 
           <div class="decision-buttons">
-            <button class="decision-btn" onclick="selectOption('replace')">
+            <button class="decision-btn" data-option="replace">
               <strong>Replace Photo</strong>
               <span>Upload a new photo to address the AI's concern</span>
             </button>
 
-            <button class="decision-btn" onclick="selectOption('keep')">
+            <button class="decision-btn" data-option="keep">
               <strong>My Photo is Correct</strong>
               <span>Proceed with this photo - I believe it meets ICA requirements</span>
             </button>
 
-            <button class="decision-btn" onclick="selectOption('review')">
+            <button class="decision-btn" data-option="review">
               <strong>Request Human Review</strong>
               <span>Have an ICA officer verify the photo during processing</span>
             </button>
@@ -437,11 +437,11 @@
           Verify No Submission Blocking
         </div>
 
-        <div style="text-align: center; padding: 20px;">
-          <button class="btn btn-primary" onclick="verifySubmission()" style="font-size: 16px; padding: 14px 32px;">
+        <div class="verification-center">
+          <button class="btn btn-primary verification-btn" id="verify-btn">
             Continue to Final Review & Submit
           </button>
-          <p style="margin-top: 12px; font-size: 13px; color: #6B7280;">
+          <p class="verification-note">
             This button should be enabled regardless of AI warning
           </p>
         </div>
@@ -473,7 +473,20 @@
   <script>
     let selectedOption = null;
 
-    function selectOption(option) {
+    // Initialize event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Decision button listeners
+      document.querySelectorAll('.decision-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          selectOption(this.dataset.option, this);
+        });
+      });
+
+      // Verify button listener
+      document.getElementById('verify-btn')?.addEventListener('click', verifySubmission);
+    });
+
+    function selectOption(option, button) {
       selectedOption = option;
 
       // Reset all buttons
@@ -482,7 +495,7 @@
       });
 
       // Highlight selected
-      event.target.classList.add('selected');
+      button.classList.add('selected');
 
       // Hide all responses
       document.getElementById('keep-response').classList.remove('show');

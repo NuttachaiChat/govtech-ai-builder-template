@@ -213,7 +213,7 @@
             <strong>What to do:</strong>
             Upload a clear copy of the child's birth certificate (Singapore or foreign birth certificate with translation if applicable).
           </div>
-          <button class="btn btn-primary" onclick="handleUpload('birth-cert')">Upload Document</button>
+          <button class="btn btn-primary" data-upload="birth-cert">Upload Document</button>
         </div>
 
         <div class="error-card warning">
@@ -230,7 +230,7 @@
             <strong>What to do:</strong>
             Upload a new photo with a plain white background. The photo should be taken within the last 3 months.
           </div>
-          <button class="btn btn-secondary" onclick="handleUpload('photo')">Replace Photo</button>
+          <button class="btn btn-secondary" data-upload="photo">Replace Photo</button>
         </div>
       </section>
 
@@ -289,7 +289,7 @@
       </div>
 
       <footer class="actions">
-        <button class="btn btn-outline" id="submit-btn" disabled onclick="handleSubmit()">Submit Application</button>
+        <button class="btn btn-outline" id="submit-btn" disabled>Submit Application</button>
         <p class="footer-note" id="footer-note">Fix all issues above to enable submission</p>
       </footer>
 
@@ -311,6 +311,19 @@
     let startTime = Date.now();
     let birthCertFixed = false;
     let photoFixed = false;
+
+    // Initialize event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Upload button listeners
+      document.querySelectorAll('[data-upload]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          handleUpload(this.dataset.upload);
+        });
+      });
+
+      // Submit button listener
+      document.getElementById('submit-btn')?.addEventListener('click', handleSubmit);
+    });
 
     // Timer
     setInterval(() => {

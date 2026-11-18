@@ -313,10 +313,10 @@
           </ul>
         </div>
 
-        <div class="upload-area" id="birth-cert-upload" onclick="simulateUpload('birth-cert', 'success')">
+        <div class="upload-area" id="birth-cert-upload" data-upload-type="birth-cert" data-result-type="success">
           <div class="upload-icon">📄</div>
-          <p style="font-weight: 600; margin-bottom: 4px;">Click to upload birth certificate</p>
-          <p style="font-size: 14px; color: #6B7280;">PDF, JPG, or PNG (max 5MB)</p>
+          <p class="upload-primary">Click to upload birth certificate</p>
+          <p class="upload-secondary">PDF, JPG, or PNG (max 5MB)</p>
         </div>
 
         <div class="validation-result success" id="birth-cert-result">
@@ -352,10 +352,10 @@
           </div>
         </div>
 
-        <div class="upload-area" id="photo-upload" onclick="simulateUpload('photo', 'warning')">
+        <div class="upload-area" id="photo-upload" data-upload-type="photo" data-result-type="warning">
           <div class="upload-icon">📷</div>
-          <p style="font-weight: 600; margin-bottom: 4px;">Click to upload passport photo</p>
-          <p style="font-size: 14px; color: #6B7280;">JPG or PNG (max 2MB)</p>
+          <p class="upload-primary">Click to upload passport photo</p>
+          <p class="upload-secondary">JPG or PNG (max 2MB)</p>
         </div>
 
         <div class="validation-result warning" id="photo-result">
@@ -368,17 +368,17 @@
           </p>
 
           <div class="action-buttons">
-            <button class="btn btn-primary btn-sm" onclick="replacePhoto()">Replace Photo</button>
-            <button class="btn btn-secondary btn-sm" onclick="keepPhoto()">My Photo is Correct</button>
-            <button class="btn btn-outline btn-sm" onclick="requestReview()">Request Human Review</button>
+            <button class="btn btn-primary btn-sm" id="replace-photo-btn">Replace Photo</button>
+            <button class="btn btn-secondary btn-sm" id="keep-photo-btn">My Photo is Correct</button>
+            <button class="btn btn-outline btn-sm" id="request-review-btn">Request Human Review</button>
           </div>
         </div>
       </section>
 
       <!-- Navigation -->
       <footer class="actions">
-        <button class="btn btn-outline" onclick="window.location.href='index.html'">Back</button>
-        <button class="btn btn-primary" id="continue-btn" onclick="continueToReview()">Continue to Review</button>
+        <button class="btn btn-outline" id="back-btn">Back</button>
+        <button class="btn btn-primary" id="continue-btn">Continue to Review</button>
       </footer>
 
       <div class="prototype-label">
@@ -395,6 +395,27 @@
     let birthCertUploaded = false;
     let photoUploaded = false;
     let photoStatus = 'warning'; // 'success', 'warning', or 'kept'
+
+    // Initialize event listeners when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Upload area listeners
+      document.getElementById('birth-cert-upload')?.addEventListener('click', function() {
+        simulateUpload(this.dataset.uploadType, this.dataset.resultType);
+      });
+
+      document.getElementById('photo-upload')?.addEventListener('click', function() {
+        simulateUpload(this.dataset.uploadType, this.dataset.resultType);
+      });
+
+      // Action button listeners
+      document.getElementById('replace-photo-btn')?.addEventListener('click', replacePhoto);
+      document.getElementById('keep-photo-btn')?.addEventListener('click', keepPhoto);
+      document.getElementById('request-review-btn')?.addEventListener('click', requestReview);
+      document.getElementById('continue-btn')?.addEventListener('click', continueToReview);
+      document.getElementById('back-btn')?.addEventListener('click', function() {
+        window.location.href = 'index.html';
+      });
+    });
 
     function simulateUpload(type, resultType) {
       if (type === 'birth-cert') {
