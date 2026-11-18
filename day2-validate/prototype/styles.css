@@ -47,6 +47,34 @@ header {
   border-bottom: 4px solid #0F2540;
 }
 
+/* Upload area text styles */
+.upload-primary {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.upload-secondary {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+/* Verification section styles */
+.verification-center {
+  text-align: center;
+  padding: 20px;
+}
+
+.verification-btn {
+  font-size: 16px;
+  padding: 14px 32px;
+}
+
+.verification-note {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #6B7280;
+}
+
 .logo {
   display: inline-flex;
   align-items: center;
