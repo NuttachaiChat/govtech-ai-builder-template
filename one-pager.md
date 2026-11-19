@@ -69,6 +69,91 @@ Use case: Scenario B · ICA Passport Applications (all data synthetic)
 
 ## Build plan and handoff
 ## Agent role and guardrails
+
+### What the Agent Does
+
+**Validates ICA passport applications BEFORE submission to officers.**
+
+The agent checks for:
+- Missing mandatory documents (birth certificate, passport photo, parent NRIC, existing passport)
+- Photo compliance (white background, size, face centered, taken within 3 months)
+- Name matching between application and documents
+- Document format and language requirements (English/Chinese/Malay/Tamil)
+
+**How it works:**
+1. Applicant uploads documents → Agent validates in real-time
+2. Agent generates plain language error prompts with "What to do" steps
+3. Applicant fixes errors OR overrides warnings (three-option pattern)
+4. Agent flags edge cases → Escalates to officer queue when needed
+5. Application submitted → Officer reviews only flagged items
+
+### Decision Authority
+
+**Agent decides alone (no human in loop):**
+- Missing mandatory documents → Block submission until uploaded
+- Documents present → Mark as verified
+- Real data detected → Refuse processing (safety check)
+- **Volume:** ~15% of applications (2,250/week)
+
+**Agent proposes, user chooses (3-option pattern):**
+- 75-89% confidence warnings → Soft suggestion (Replace / Keep / Request Review)
+- 90%+ confidence warnings → Strong warning requiring 3-checkbox acknowledgment
+- User always has control, agent never blocks on AI warnings alone
+- **Volume:** ~40% of applications show warnings (6,000/week)
+
+**Agent escalates, officer decides:**
+- Foreign language documents → Language verification queue
+- Suspected fraud (>70% confidence) → Fraud investigation queue
+- Legal name changes → Name verification queue
+- Edge cases (diplomatic, refugee, stateless) → Special cases queue
+- Confidence <75% → Silently flagged for officer (not shown to applicant)
+- User requests review → Honor request, route to queue
+- **Volume:** ~15% escalated to officers (2,250/week vs 15,000/week baseline = 85% workload reduction)
+
+### What Stays Human
+
+**Officer decisions (agent never makes final call):**
+- Final approval/rejection of application
+- Interpretation of ambiguous documents (faded text, handwritten, translated)
+- Policy exceptions (compassionate grounds, urgent travel, special accommodations)
+- Fraud determination (agent flags, officer investigates)
+- All dismissed AI warnings (user overrode at 92% confidence? officer reviews)
+
+**User decisions (agent never overrides):**
+- Whether to replace flagged photo or keep it
+- When to request human review (button always available)
+- Whether to continue or abandon application
+
+**Strategic decisions (product team, requires Director sign-off):**
+- Confidence threshold changes (currently 90%+ strong, 75-89% soft, <75% silent)
+- Error message wording (templates are "Sacred" - user-tested and locked)
+- ICA corporate identity (Blue #1C3F6E, Red #C4122E - government branding)
+- Three-option pattern (Replace/Keep/Review - core UX validated by stakeholders)
+
+### Guardrails
+
+**Agent must stop and escalate if:**
+- Foreign language document (not English/Chinese/Malay/Tamil)
+- Document appears altered (>70% confidence fraud)
+- Name completely different between documents (may be legal change)
+- Edge case application type (diplomatic, refugee, stateless)
+- Confidence at threshold boundary (exactly 75.0%)
+- User explicitly requests human review
+
+**Kill switches (emergency stop):**
+- Level 1: Pause new validations, route to manual flow
+- Level 2: Block all agent-validated submissions
+- Level 3: Rollback completely, disable agent
+
+**Red flags that trigger manual review:**
+- Dismissal rate >30% → Model inaccurate, needs retraining
+- Officer override rate >20% → Officers don't trust agent
+- Support calls increase → Prompts confusing
+- Completion time >22 min → Too much friction
+- Escalation rate >20% → Agent over-escalating
+
+**Details:** See day3-build/agent-control-panel.md for full decision authority matrix
+
 ## Roles and operating model
 ## Strategy and roadmap
 
