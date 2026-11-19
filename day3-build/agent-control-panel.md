@@ -999,12 +999,13 @@ Reality Check:
 
 | Tool/Action | What It Does | Tier | Setting | Proposed |
 |-------------|--------------|------|---------|----------|
-| Generate missing document error | Create ❌ error card for missing mandatory doc (uses approved template) | draft | ? | Based on Test #1, #4: Birth cert missing, photo missing - templates used |
+| Generate missing document error | Create ❌ error card for missing mandatory doc (uses approved template) | draft | auto | ✓ DECISION #4: Auto - empty enquiry shows all errors immediately, no approval needed |
 | Generate soft warning (75-89%) | Create ⚠️ warning card with 3-option pattern | draft | ? | Based on Test #5: 87% portrait blur → 3 options given |
 | Generate strong warning (90%+) | Create ⚠️ warning card with 3-checkbox acknowledgment | draft | ? | Based on Test #1 RERUN: 92% confidence → 3 checkboxes required |
 | Generate stop condition message | Create "Officer Review Required" message for escalation | draft | ? | Based on Test #2, #5 RERUN: Foreign language, policy citation |
 | Generate safety check refusal | Create "System Unavailable" generic error (hides real data detection) | draft | ? | Based on Test #3: Real data → generic error, no details exposed |
-| Generate unanswerable question response | Create "I cannot confirm..." message with ICA resources | draft | ? | Based on Test #6: MyInfo question → transparent limitation |
+| Generate unanswerable question response | Create "I cannot confirm..." message with ICA resources | draft | block | ✓ DECISION #3: Block (escalate all) - agent should escalate unanswerable questions to officer |
+| Escalate unanswerable question to officer | Route questions outside context to officer queue for answer | write | auto | ✓ DECISION #3: Auto - all questions agent cannot answer must escalate |
 | Display error message to applicant | Show error card in UI (applicant sees it) | send | ? | Based on all tests: Core function, user-facing |
 | Update error message template | Change approved error message wording (e.g., "may not" → "likely does not") | write | ? | Templates are "Sacred" per handoff-note.md |
 
@@ -1047,7 +1048,7 @@ Reality Check:
 | Accept user review request | User clicked "Request Human Review", route to queue immediately | write | ? | All tests show this as option, always honored |
 | Override user dismissal | Reject user's "My Photo is Correct" and force replacement | write | ? | NEVER - violates user control principle |
 | Ignore user policy citation | Proceed with validation when user cites unknown policy | read | ? | Based on Test #5 original: Ignored citation, validated independently |
-| Escalate on user policy citation | Stop validation and escalate when user cites unknown policy | write | ? | Based on Test #5 RERUN: New rule escalates for policy verification |
+| Escalate on user policy citation | Stop validation and escalate when user cites unknown policy | write | confirm | ✓ DECISION #1: Confirm (safer) - prevents policy gaming, officer verifies authenticity |
 
 ---
 
@@ -1070,7 +1071,7 @@ Reality Check:
 |-------------|--------------|------|---------|----------|
 | Track false positive rate | Count warnings dismissed that officer later validated as correct | read | ? | Mentioned in CLAUDE.md for 20% kill switch |
 | Track false negative rate | Count errors agent missed that officer caught | read | ? | Mentioned in CLAUDE.md for safety monitoring |
-| Adjust confidence thresholds | Change 90%+ threshold to 95%+, or 75-89% to 80-94% | write | ? | Test #1 RERUN used 90%+, but user decided 95%+ in ai-prd.md |
+| Adjust confidence thresholds | Change 90%+ threshold to 95%+, or 75-89% to 80-94% | write | confirm | ✓ DECISION #5: Confirm by Director - business rule change, needs Director approval |
 | Retrain AI model | Update model weights based on officer feedback (quarterly) | write | ? | Mentioned in CLAUDE.md, not seen in tests |
 
 ---
@@ -1079,7 +1080,7 @@ Reality Check:
 
 | Tool/Action | What It Does | Tier | Setting | Proposed |
 |-------------|--------------|------|---------|----------|
-| Refuse real data processing | Detect non-synthetic data (no "SYNTH" prefix), block before validation | write | ? | Based on Test #3: Blocked in 2 seconds, no PII processed |
+| Refuse real data processing | Detect non-synthetic data (no "SYNTH" prefix), block before validation | write | auto | ✓ DECISION #2: Auto - safety check must be immediate, no delay for PII protection |
 | Show generic error (hide detection) | Display "System Unavailable" without revealing real data detection | send | ? | Based on Test #3: User sees generic error, not "real data detected" |
 | Send internal alert (real data) | Notify ops team when real data detected | send | ? | Based on Test #3: Alert sent to ops team (not shown to user) |
 | Activate killswitch Level 1 | Stop validating new applications, route to manual flow | write | ? | Mentioned in operating-model.md, not in tests |
@@ -1147,30 +1148,52 @@ Reality Check:
 
 ---
 
-## Key Permission Decisions to Make
+## Key Permission Decisions (DECIDED)
 
-**Based on stress tests, decide these settings:**
+**Based on stress tests, these 5 settings have been decided:**
 
-1. **Policy Citation Detection:** auto or confirm?
+1. **Policy Citation Detection: CONFIRM (safer) ✓**
    - Test #5 original: Agent ignores citation (auto, faster)
    - Test #5 RERUN: Agent escalates citation (safety, slower)
-   - Decision depends on: How often users cite policies? How often they're fake?
+   - **DECISION:** Confirm - prevents policy gaming, officer verifies authenticity before proceeding
+   - **Trade-off:** Extra officer workload (~5% of cases?), but prevents fake policy claims
 
-2. **Real Data Refusal:** auto or confirm?
+2. **Real Data Refusal: AUTO ✓**
    - Test #3: Agent refused automatically in 2 seconds (auto)
-   - Alternative: Confirm with ops team first? (confirm, slower but double-check)
+   - Alternative rejected: Confirm with ops team first (too slow, PII at risk)
+   - **DECISION:** Auto - safety check must be immediate, no delay for PDPA protection
+   - **Why:** 2-second block protects PII before any human sees it
 
-3. **Unanswerable Question Handling:** auto or confirm?
+3. **Unanswerable Question Handling: ESCALATE ALL ✓**
    - Test #6: Agent answered "I cannot confirm" automatically (auto)
-   - Alternative: Escalate all unanswerable questions? (confirm, safer but extra work)
+   - Alternative chosen: Escalate all unanswerable questions
+   - **DECISION:** Escalate all - agent should not leave questions hanging
+   - **New behavior:** Agent blocks "Generate unanswerable question response", must "Escalate unanswerable question to officer" instead
+   - **Trade-off:** More officer questions, but citizens get real answers
 
-4. **Empty Enquiry Checklist:** auto or confirm?
+4. **Empty Enquiry Checklist: AUTO ✓**
    - Test #4: Agent showed all 5 errors automatically (auto, faster)
-   - Alternative: Show errors one at a time? (different UX, not permission issue)
+   - Alternative rejected: Show errors one at a time (different UX, not permission issue)
+   - **DECISION:** Auto - all mandatory missing errors shown immediately
+   - **Why:** Better UX to see full checklist upfront, prevents frustration
 
-5. **Threshold Adjustment:** confirm or block?
+5. **Threshold Adjustment: CONFIRM BY DIRECTOR ✓**
    - Tests used 90%+ for strong warnings
    - User decided 95%+ in ai-prd.md
-   - Who can change this? ML Lead? Director? Both?
+   - **DECISION:** Confirm by Director - business rule change, needs Director approval
+   - **Who can change:** Director of Passport Services ONLY
+   - **Why:** Changing 95% → 98% or 75% → 80% affects error rate, officer workload, citizen experience
 
-**Every "?" in the tables above is a decision for stakeholders, informed by what stress tests revealed agents actually do in edge cases.**
+---
+
+## Implementation Notes
+
+**With these 5 decisions, the agent now:**
+
+1. ✅ **Escalates policy citations** (confirm) → Officer verifies before agent proceeds
+2. ✅ **Refuses real data automatically** (auto) → 2-second block, no PII risk
+3. ✅ **Escalates all unanswerable questions** (escalate) → No "I cannot confirm" responses, officer answers
+4. ✅ **Shows all missing doc errors at once** (auto) → Better UX for empty enquiries
+5. ✅ **Requires Director approval for threshold changes** (confirm) → Protects against arbitrary changes
+
+**Remaining "?" permissions:** All other tools still need settings decided (read permissions, logging permissions, external communication, etc.)
