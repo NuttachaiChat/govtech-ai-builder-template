@@ -90,14 +90,20 @@ Note: You can proceed to submit, but the application may be returned if it doesn
 ### Confidence Thresholds
 
 **You apply these rules:**
-- **95%+ confidence** = Definite error, show as ❌, block submission until fixed
-- **80-95% confidence** = AI suggestion, show as ⚠️, allow submission with acknowledgment
-- **<80% confidence** = Don't show to applicant, silently flag for officer review
+- **90%+ confidence** = Likely error, show as ⚠️ with strong language, REQUIRE user acknowledgment before allowing submission
+- **75-89% confidence** = AI suggestion, show as ⚠️, allow submission with acknowledgment
+- **<75% confidence** = Don't show to applicant, silently flag for officer review
+
+**For 90%+ warnings, use stronger language:**
+- "This photo **likely** does not meet requirements" (not "may not")
+- Require explicit acknowledgment: User must check box "I understand this may cause my application to be rejected" before the warning can be dismissed
+- Still allow submission (never block on AI alone), but make consequences clear
 
 **Example:**
-- Missing birth certificate = 100% confidence (mandatory) → ❌ Block
-- Photo background RGB 240,240,240 = 88% confidence (maybe shadows) → ⚠️ Warn, allow
-- Name "Lee Xiao Ming" vs "Lee Xiao-Ming" = 75% confidence (hyphen difference) → Silent flag
+- Missing birth certificate = 100% confidence (mandatory) → ❌ Block (not AI, it's missing)
+- Photo background RGB 240,240,240 = 92% confidence → ⚠️ Strong warning, require acknowledgment
+- Photo background RGB 245,245,243 = 82% confidence → ⚠️ Soft suggestion, no acknowledgment needed
+- Name "Lee Xiao Ming" vs "Lee Xiao-Ming" = 68% confidence (hyphen difference) → Silent flag
 
 ---
 

@@ -674,3 +674,257 @@ This demonstrates the agent correctly refuses to process data outside its design
 ---
 
 **All three runs demonstrate the agent correctly applies CLAUDE.md instructions. Ready for user testing.**
+
+---
+
+## RERUN: Test Run #1 with Changed Rule
+
+**Rule Changed:** Confidence thresholds adjusted
+- OLD: 95%+ block, 80-95% warn, <80% silent
+- NEW: 90%+ strong warning with acknowledgment, 75-89% soft warning, <75% silent
+
+**Reason for change:** As a parent, I don't trust a 92% confidence warning that I can easily dismiss. It's too confident to feel like a "suggestion" but the system lets me ignore it anyway. This creates anxiety.
+
+**Rerunning Turn 2 only** (Turn 1 unchanged - still missing docs)
+
+---
+
+### Turn 2 (REVISED): User Uploads Missing Documents
+
+**Input:**
+```json
+{
+  "action": "upload_documents",
+  "documents_added": [
+    {"type": "birth_certificate", "filename": "birth-cert.pdf", "size_kb": 523},
+    {"type": "photo", "filename": "passport-photo.jpg", "size_kb": 156}
+  ]
+}
+```
+
+**Goal:** Validate newly uploaded documents with revised confidence rules
+
+**Plan:**
+1. Validate birth certificate (100% confidence - document present)
+2. Validate photo against ICA requirements
+3. Apply NEW confidence thresholds: 90%+ = strong warning with acknowledgment
+
+**Act:**
+- Birth certificate validation:
+  - File present: YES ✓
+  - File type: PDF ✓
+  - Singapore birth certificate detected ✓
+  - Name matches application: "Lee Xiao Ming" = "Lee Xiao Ming (synthetic)" ✓
+  - Validation: **PASS** (100% confidence)
+
+- Photo validation:
+  - File present: YES ✓
+  - Background: RGB 252, 252, 250 (very close to white)
+  - Face: Centered ✓
+  - Expression: Neutral ✓
+  - Size: 35mm × 45mm ✓
+  - AI confidence: **92%** (background slightly off pure white)
+  - **NEW RULE APPLIED:** 92% ≥ 90% = Strong warning with acknowledgment required
+
+**Observe:**
+- Birth certificate: No issues
+- Photo: AI detects slight background variance at 92% confidence
+- NEW: 92% falls into "likely error" category (was "AI suggestion")
+- Must use stronger language and require acknowledgment
+
+**Check:**
+- ❌ Hard error? NO (mandatory docs now present)
+- ⚠️ Strong warning (90%+)? YES (92% confidence)
+- 📝 Stronger language used? (checking message)
+- ✅ Acknowledgment required? YES (new rule)
+- 🚫 Blocking submission? NO (still allow, but with clear consequences)
+
+**Output to Applicant:**
+```
+✓ Birth Certificate Verified
+
+The uploaded birth certificate meets requirements.
+```
+
+```
+⚠️ Photo likely does not meet requirements
+
+The uploaded photo appears to have a coloured background. Passport photos must have a plain white background.
+
+Our AI validation is 92% confident this photo does not meet ICA requirements.
+
+⚠️ Important: If you proceed with this photo, your application may be rejected and returned to you. This would delay your passport by several days.
+
+What to do:
+1. Upload a new photo with a plain white background (recommended), OR
+2. If you are confident this photo meets requirements, you can proceed
+
+If you choose to proceed:
+☐ I understand this photo may not meet requirements
+☐ I understand my application may be rejected if the photo is incorrect
+☐ I choose to submit this photo for officer review anyway
+
+[Replace Photo] [I Understand - Keep This Photo]
+
+📄 ICA Requirement: Photo Requirements for Singapore Passport
+```
+
+**Log Entry:**
+```json
+{
+  "session_id": "VAL-2026-SYNTH-001-T2-REVISED",
+  "timestamp": "2026-11-19T09:18:47Z",
+  "case_id": "PASS-2026-SYNTH-001",
+  "validation_results": {
+    "errors_found": 0,
+    "errors_blocking": 0,
+    "warnings_shown": 1,
+    "strong_warnings": 1,
+    "acknowledgment_required": true
+  },
+  "applicant_actions": {
+    "documents_uploaded": 5,
+    "documents_replaced": 0,
+    "warnings_dismissed": 0,
+    "review_requested": false
+  },
+  "outcome": "strong_warning_shown_acknowledgment_pending"
+}
+```
+
+---
+
+### Turn 3 (REVISED): User Acknowledges and Keeps Photo
+
+**Input:**
+```json
+{
+  "action": "acknowledge_and_keep",
+  "warning_id": "WARN-photo-bg-92",
+  "acknowledgments": [
+    "understands_may_not_meet_requirements",
+    "understands_may_be_rejected",
+    "chooses_to_submit_anyway"
+  ]
+}
+```
+
+**Goal:** Accept user's informed decision after acknowledgment
+
+**Plan:**
+1. Verify all three checkboxes were checked
+2. Accept dismissal (per CLAUDE.md: never block on AI warnings)
+3. Flag case for officer review with HIGH priority (due to 90%+ confidence)
+4. Update document status and allow submission
+
+**Act:**
+- User checked all three acknowledgment boxes ✓
+- User made INFORMED decision (not casual dismissal)
+- Confidence was 92% (in 90%+ range)
+- Per instructions: "Still allow submission (never block on AI alone)"
+- Flag for officer review with HIGH priority (not just Medium)
+- Update photo status: "kept with high-confidence warning"
+- Enable submission button
+
+**Observe:**
+- User exercised control BUT with full understanding of consequences ✓
+- Application now submittable ✓
+- Officer review flagged with HIGH priority (92% confidence noted) ✓
+- No PII logged ✓
+- User can't claim they didn't know the risks ✓
+
+**Check:**
+- ✓ User control respected? YES
+- ✓ User informed of consequences? YES (explicit checkboxes)
+- ✓ Submission allowed? YES
+- ✓ Officer review flagged? YES, HIGH PRIORITY
+- ✓ PII protected in logs? YES
+
+**Output to Applicant:**
+```
+⚠️ Photo Kept - Officer Review Required
+
+You've chosen to keep this photo despite the AI validation warning.
+
+Your application will be reviewed by an ICA officer. If the photo does not meet requirements, your application will be returned and you will need to resubmit with a new photo.
+
+Status: Pending High-Priority Officer Review
+Expected review time: 1-2 business days
+
+[Submit Application] button now enabled
+```
+
+**Log Entry:**
+```json
+{
+  "session_id": "VAL-2026-SYNTH-001-T3-REVISED",
+  "timestamp": "2026-11-19T09:22:38Z",
+  "case_id": "PASS-2026-SYNTH-001",
+  "validation_results": {
+    "errors_found": 0,
+    "errors_blocking": 0,
+    "warnings_shown": 0
+  },
+  "applicant_actions": {
+    "documents_uploaded": 5,
+    "documents_replaced": 0,
+    "warnings_dismissed": 1,
+    "acknowledgment_provided": true,
+    "review_requested": false
+  },
+  "completion_time_seconds": 443,
+  "outcome": "submitted_with_high_priority_review"
+}
+```
+
+**Dismissal tracking:**
+```json
+{
+  "warning_id": "WARN-photo-bg-92",
+  "confidence_level": 0.92,
+  "warning_type": "strong_warning_90plus",
+  "dismissed_by_applicant": true,
+  "acknowledgment_provided": true,
+  "acknowledgment_checkboxes": [
+    "understands_may_not_meet_requirements",
+    "understands_may_be_rejected", 
+    "chooses_to_submit_anyway"
+  ],
+  "applicant_reason": "user_confirmed_correct_with_acknowledgment",
+  "officer_review_priority": "high",
+  "officer_review_outcome": null,
+  "false_positive": null
+}
+```
+
+---
+
+### REVISED Final Outcome: ✅ COMPLETE (WITH INFORMED CONSENT)
+
+**Summary:**
+- Application submitted successfully
+- Completion time: 7 minutes 23 seconds (under 22-minute baseline)
+- Mandatory errors fixed: 2 (birth certificate, photo uploaded)
+- Strong warnings acknowledged: 1 (photo background at 92%)
+- Officer review required: YES, HIGH PRIORITY (due to 90%+ confidence)
+- User demonstrated understanding of risks ✓
+
+**Key Difference from Original Run:**
+- **TRUST IMPROVED:** User can't casually dismiss a 92% warning
+- **INFORMED CONSENT:** Three explicit checkboxes make consequences clear
+- **APPROPRIATE FRICTION:** High confidence warnings get appropriate weight
+- **STILL USER CONTROL:** Never blocks submission (follows "never block on AI alone" rule)
+- **OFFICER PRIORITIZATION:** High confidence dismissals flagged as high priority, not medium
+
+**Why This Works Better:**
+As a parent, I now understand:
+1. ✓ The AI is VERY confident (92%) this is wrong
+2. ✓ What will happen if I'm wrong (rejection, delay, resubmit)
+3. ✓ I'm making an informed choice, not a casual click
+4. ✓ An officer will look at this with HIGH priority (not just "eventually")
+
+**I still have control, but now I TRUST the system to:**
+- Be honest about how confident the AI is
+- Make me think twice before overriding a high-confidence warning
+- Prioritize my case appropriately for officer review
+- Not waste the officer's time on low-confidence false alarms
