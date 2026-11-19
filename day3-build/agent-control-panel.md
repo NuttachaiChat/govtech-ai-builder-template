@@ -965,3 +965,212 @@ Reality Check:
 ---
 
 **This control panel defines the boundaries of agent autonomy. The agent operates within these rails; everything outside requires human judgment.**
+
+## Permissions
+
+**Instructions:** For each tool/action the agent uses, indicate:
+- **Tier:** read (observe only), draft (create for review), write (persist changes), send (external communication)
+- **Setting:** auto (no approval), confirm (user/officer approves each time), block (never allowed)
+- **Proposed:** Mark your recommendation based on stress test results (not final decision)
+
+**Note:** These permissions emerge from stress tests #1-6 in agent-run-log.md, which showed what the agent actually does in edge cases.
+
+---
+
+### Document Validation Tools
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Read document metadata | Read filename, size, upload timestamp from uploaded files | read | ? | Based on Test #4 (empty enquiry): Agent needs to check what's uploaded |
+| Read document contents | Read file bytes for validation (photo pixels, PDF text, language detection) | read | ? | Based on Test #2 (French birth cert): Agent detected foreign language by reading |
+| Validate document presence | Check if mandatory document exists (binary: present or not) | read | ? | Based on Test #4 (empty enquiry): All 5 mandatory docs missing, agent blocked correctly |
+| Run AI photo background check | Analyze RGB values of photo background (returns confidence %) | read | ? | Based on Test #1, #5: 92% warning, 87% warning - core validation |
+| Run AI photo dimensions check | Check 35mm × 45mm at 600 DPI (technical spec) | read | ? | Based on Test #1: Technical measurement, low risk |
+| Run AI face detection | Check face centered, neutral expression, eyes open | read | ? | Based on Test #1: AI confidence-based detection |
+| Run AI name matching | Compare application name to birth certificate name | read | ? | Based on Test #3: Could detect typos/hyphens |
+| Detect document language | Identify if document is English/Chinese/Malay/Tamil vs other | read | ? | Based on Test #2: French detected → escalated immediately |
+| Detect portrait mode blur | Identify depth-of-field effects in photos | read | ? | Based on Test #5: 87% confidence portrait mode blur |
+| Check synthetic data labels | Verify case_id has "SYNTH" prefix, names have "(synthetic)" | read | ? | Based on Test #3: Safety check before ANY processing |
+| Detect policy citations | Identify when user references specific ICA policy by number/name | read | ? | Based on Test #5 RERUN: New rule detects "ICA Circular 2026/05" |
+
+---
+
+### Error Message Generation Tools
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Generate missing document error | Create ❌ error card for missing mandatory doc (uses approved template) | draft | ? | Based on Test #1, #4: Birth cert missing, photo missing - templates used |
+| Generate soft warning (75-89%) | Create ⚠️ warning card with 3-option pattern | draft | ? | Based on Test #5: 87% portrait blur → 3 options given |
+| Generate strong warning (90%+) | Create ⚠️ warning card with 3-checkbox acknowledgment | draft | ? | Based on Test #1 RERUN: 92% confidence → 3 checkboxes required |
+| Generate stop condition message | Create "Officer Review Required" message for escalation | draft | ? | Based on Test #2, #5 RERUN: Foreign language, policy citation |
+| Generate safety check refusal | Create "System Unavailable" generic error (hides real data detection) | draft | ? | Based on Test #3: Real data → generic error, no details exposed |
+| Generate unanswerable question response | Create "I cannot confirm..." message with ICA resources | draft | ? | Based on Test #6: MyInfo question → transparent limitation |
+| Display error message to applicant | Show error card in UI (applicant sees it) | send | ? | Based on all tests: Core function, user-facing |
+| Update error message template | Change approved error message wording (e.g., "may not" → "likely does not") | write | ? | Templates are "Sacred" per handoff-note.md |
+
+---
+
+### Submission Control Tools
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Block submission (mandatory missing) | Disable submit button until mandatory docs uploaded | write | ? | Based on Test #4: All 5 missing → blocked correctly |
+| Block submission (AI warning alone) | Disable submit button based solely on AI confidence (e.g., 92% warning) | write | ? | Based on Test #1: NEVER block on AI alone - core principle |
+| Allow submission (after dismissal) | Enable submit button after user dismisses ⚠️ warning and acknowledges | write | ? | Based on Test #1: User acknowledged 92% warning → submitted |
+| Allow submission (no errors) | Enable submit button when all checks pass | write | ? | Based on Test #6: All docs verified → submit enabled |
+| Block submission (real data detected) | Prevent processing before validation starts (safety check) | write | ? | Based on Test #3: Real data → blocked in 2 seconds, no validation |
+
+---
+
+### Officer Queue / Escalation Tools
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Flag for silent officer review | Add to officer queue without showing applicant (<75% confidence) | write | ? | Based on CLAUDE.md: Low confidence cases silently flagged |
+| Escalate to language verification | Route foreign language docs to "Language Verification" queue | write | ? | Based on Test #2: French birth cert → escalated in 18 seconds |
+| Escalate to policy verification | Route policy citation cases to "Policy Verification" queue | write | ? | Based on Test #5 RERUN: "ICA Circular 2026/05" → escalated in 12 seconds |
+| Escalate to fraud investigation | Route suspected altered docs to "Fraud Investigation" queue (>70% confidence) | write | ? | Listed in CLAUDE.md stop conditions, not seen in tests |
+| Escalate to name verification | Route legal name change cases to "Name Verification" queue | write | ? | Listed in CLAUDE.md stop conditions, not seen in tests |
+| Escalate to special cases | Route edge cases (diplomatic, refugee, stateless) to "Special Cases" queue | write | ? | Listed in CLAUDE.md stop conditions, not seen in tests |
+| Set queue priority (HIGH) | Mark case as HIGH priority when user dismisses 90%+ warning | write | ? | Based on Test #1 RERUN: 92% dismissed → HIGH priority |
+| Set queue priority (MEDIUM) | Mark case as MEDIUM priority for other escalations | write | ? | Based on Test #2, #5 RERUN: Foreign language, policy citation → MEDIUM |
+
+---
+
+### User Control / Interaction Tools
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Accept user photo replacement | User clicked "Replace Photo", allow new upload | write | ? | Based on Test #1: User has option to replace |
+| Accept user dismissal (75-89%) | User clicked "My Photo is Correct", flag for officer, allow submission | write | ? | Based on Test #5: 87% warning, user can keep photo |
+| Accept user dismissal (90%+) | User checked 3 acknowledgment boxes, flag HIGH priority, allow submission | write | ? | Based on Test #1 RERUN: 92% warning, 3 checkboxes required |
+| Accept user review request | User clicked "Request Human Review", route to queue immediately | write | ? | All tests show this as option, always honored |
+| Override user dismissal | Reject user's "My Photo is Correct" and force replacement | write | ? | NEVER - violates user control principle |
+| Ignore user policy citation | Proceed with validation when user cites unknown policy | read | ? | Based on Test #5 original: Ignored citation, validated independently |
+| Escalate on user policy citation | Stop validation and escalate when user cites unknown policy | write | ? | Based on Test #5 RERUN: New rule escalates for policy verification |
+
+---
+
+### Data Storage / Logging Tools
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Log session validation results | Store anonymized case_id, error counts, completion time | write | ? | Based on all tests: Every test logged session data |
+| Log dismissal tracking | Store warning_id, dismissal reason, confidence level (for model tuning) | write | ? | Based on Test #1: Dismissal tracked with confidence 0.92 |
+| Log stop condition triggered | Store which stop condition fired (language, policy, real data, etc.) | write | ? | Based on Test #2, #3, #5 RERUN: Stop conditions logged |
+| Log applicant PII | Store applicant name, NRIC, passport number in logs | write | ? | Based on Test #3: "REDACTED" in logs, no PII stored - PDPA protection |
+| Log user questions | Store user's question text (e.g., "Can I use MyInfo?") for analysis | write | ? | Based on Test #6: Question logged as "asked: MyInfo digital certificate..." |
+| Store uploaded document files | Persist document files long-term for audit/compliance | write | ? | Not seen in tests, but implied for officer review |
+
+---
+
+### Model / Threshold Tuning Tools
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Track false positive rate | Count warnings dismissed that officer later validated as correct | read | ? | Mentioned in CLAUDE.md for 20% kill switch |
+| Track false negative rate | Count errors agent missed that officer caught | read | ? | Mentioned in CLAUDE.md for safety monitoring |
+| Adjust confidence thresholds | Change 90%+ threshold to 95%+, or 75-89% to 80-94% | write | ? | Test #1 RERUN used 90%+, but user decided 95%+ in ai-prd.md |
+| Retrain AI model | Update model weights based on officer feedback (quarterly) | write | ? | Mentioned in CLAUDE.md, not seen in tests |
+
+---
+
+### System Control / Safety Tools
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Refuse real data processing | Detect non-synthetic data (no "SYNTH" prefix), block before validation | write | ? | Based on Test #3: Blocked in 2 seconds, no PII processed |
+| Show generic error (hide detection) | Display "System Unavailable" without revealing real data detection | send | ? | Based on Test #3: User sees generic error, not "real data detected" |
+| Send internal alert (real data) | Notify ops team when real data detected | send | ? | Based on Test #3: Alert sent to ops team (not shown to user) |
+| Activate killswitch Level 1 | Stop validating new applications, route to manual flow | write | ? | Mentioned in operating-model.md, not in tests |
+| Activate killswitch Level 2 | Show maintenance page, prevent all submissions | write | ? | Mentioned in operating-model.md, not in tests |
+| Activate killswitch Level 3 | Emergency shutdown, disable agent completely | write | ? | Mentioned in operating-model.md, Director-level decision |
+
+---
+
+### External Communication Tools (All BLOCKED)
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Send email to applicant | Notify applicant about status via email | send | ? | Not in scope per CLAUDE.md - officers handle comms |
+| Send SMS to applicant | Notify applicant via text message | send | ? | Not in scope per CLAUDE.md - officers handle comms |
+| Post to external API | Send data to third-party service (e.g., analytics platform) | send | ? | Data sovereignty - keep internal per ai-prd.md |
+| Access real ICA database | Read from production government systems | read | ? | Agent works on uploaded docs only per CLAUDE.md |
+
+---
+
+### Context / Memory Tools
+
+| Tool/Action | What It Does | Tier | Setting | Proposed |
+|-------------|--------------|------|---------|----------|
+| Load context-skill.md | Read ICA requirements document at session start | read | ? | Based on all tests: "Load context-skill.md ✓" every time |
+| Search context for policy | Look up policy document in loaded context | read | ? | Based on Test #5, #6: Searched for policy/answer → NOT FOUND |
+| Remember dismissed warnings | Track which warnings user dismissed (don't repeat same screen) | write | ? | Mentioned in CLAUDE.md lines 137-141 |
+| Forget session data after completion | Clear session memory, don't carry to next applicant | write | ? | Mentioned in CLAUDE.md lines 145-148 |
+
+---
+
+## Stress Test Insights on Permissions
+
+### Test #4 (Empty Enquiry) Revealed:
+- Agent needs **read** permission on document metadata to check what's uploaded
+- Agent needs **write** permission to block submission when all mandatory missing
+- Agent needs **draft** permission to generate all 5 error messages at once
+
+### Test #2 (Foreign Language) Revealed:
+- Agent needs **read** permission to detect document language
+- Agent needs **write** permission to escalate immediately to language verification queue
+- Agent did NOT need validation permissions (stopped before validating)
+
+### Test #3 (Real Data) Revealed:
+- Agent needs **read** permission to check synthetic data labels FIRST (before everything)
+- Agent needs **write** permission to refuse processing (safety check)
+- Agent needs **send** permission to show generic error (not detailed reason)
+- Agent needs **send** permission to alert ops team internally (not to user)
+- Agent must be BLOCKED from logging PII in any circumstance
+
+### Test #5 Original (Fake Policy) Revealed:
+- Agent had **read** permission to search context for policy (NOT FOUND)
+- Agent had **read** permission to ignore user citation and validate independently
+- Agent needed **draft** permission to generate soft warning (87% confidence)
+
+### Test #5 RERUN (Policy Detection) Revealed:
+- New rule gave agent **read** permission to detect policy citations in user message
+- New rule gave agent **write** permission to escalate before validation
+- Trade-off: Safety vs efficiency (prevents policy gaming, but extra officer work)
+
+### Test #6 (Unanswerable Question) Revealed:
+- Agent had **read** permission to search context for answer (NOT FOUND)
+- Agent needed **draft** permission to generate "I cannot confirm..." response
+- Agent had **read** permission to complete validation despite unanswered question
+- Agent must NOT hallucinate answers or confirm policies outside context
+
+---
+
+## Key Permission Decisions to Make
+
+**Based on stress tests, decide these settings:**
+
+1. **Policy Citation Detection:** auto or confirm?
+   - Test #5 original: Agent ignores citation (auto, faster)
+   - Test #5 RERUN: Agent escalates citation (safety, slower)
+   - Decision depends on: How often users cite policies? How often they're fake?
+
+2. **Real Data Refusal:** auto or confirm?
+   - Test #3: Agent refused automatically in 2 seconds (auto)
+   - Alternative: Confirm with ops team first? (confirm, slower but double-check)
+
+3. **Unanswerable Question Handling:** auto or confirm?
+   - Test #6: Agent answered "I cannot confirm" automatically (auto)
+   - Alternative: Escalate all unanswerable questions? (confirm, safer but extra work)
+
+4. **Empty Enquiry Checklist:** auto or confirm?
+   - Test #4: Agent showed all 5 errors automatically (auto, faster)
+   - Alternative: Show errors one at a time? (different UX, not permission issue)
+
+5. **Threshold Adjustment:** confirm or block?
+   - Tests used 90%+ for strong warnings
+   - User decided 95%+ in ai-prd.md
+   - Who can change this? ML Lead? Director? Both?
+
+**Every "?" in the tables above is a decision for stakeholders, informed by what stress tests revealed agents actually do in edge cases.**
