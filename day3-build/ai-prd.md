@@ -237,92 +237,92 @@ Read `day2-validate/context-skill.md` at start of each validation session for:
 
 ### Document Actions
 
-| Action | Description | Tier | Setting | Proposed |
+| Action | Description | Tier | Setting | Decided |
 |--------|-------------|------|---------|----------|
-| Read uploaded document metadata | Read filename, size, upload timestamp | read | | |
-| Read document contents | Read file bytes for validation (photo pixels, PDF text) | read | | |
-| Validate document presence | Check if mandatory document exists | read | | |
-| Validate photo background | Analyze RGB values of photo background | read | | |
-| Validate photo dimensions | Check 35mm × 45mm at 600 DPI | read | | |
-| Validate face detection | Check face centered, neutral expression, eyes open | read | | |
-| Validate name matching | Compare application name to birth certificate name | read | | |
-| Delete/modify uploaded document | Change or remove applicant's uploaded file | write | | |
+| Read uploaded document metadata | Read filename, size, upload timestamp | read | auto | ✓ Low risk, needed for validation |
+| Read document contents | Read file bytes for validation (photo pixels, PDF text) | read | auto | ✓ Required for AI validation |
+| Validate document presence | Check if mandatory document exists | read | auto | ✓ Binary check, no risk |
+| Validate photo background | Analyze RGB values of photo background | read | auto | ✓ Core validation function |
+| Validate photo dimensions | Check 35mm × 45mm at 600 DPI | read | auto | ✓ Technical spec check |
+| Validate face detection | Check face centered, neutral expression, eyes open | read | auto | ✓ Core validation function |
+| Validate name matching | Compare application name to birth certificate name | read | auto | ✓ Required validation |
+| Delete/modify uploaded document | Change or remove applicant's uploaded file | write | block | ✓ Agent never deletes user files |
 
 ### Error Message Actions
 
-| Action | Description | Tier | Setting | Proposed |
+| Action | Description | Tier | Setting | Decided |
 |--------|-------------|------|---------|----------|
-| Generate missing document error | Create ❌ error card for missing mandatory doc | draft | | |
-| Generate AI soft warning (75-89%) | Create ⚠️ warning card with 3-option pattern | draft | | |
-| Generate AI strong warning (90%+) | Create ⚠️ warning card with acknowledgment checkboxes | draft | | |
-| Display error message to applicant | Show error card in UI | send | | |
-| Update error message template | Change approved error message wording | write | | |
+| Generate missing document error | Create ❌ error card for missing mandatory doc | draft | auto | ✓ Uses approved templates |
+| Generate AI soft warning (75-89%) | Create ⚠️ warning card with 3-option pattern | draft | auto | ✓ Uses approved templates |
+| Generate AI strong warning (95%+) | Create ⚠️ warning card with acknowledgment checkboxes | draft | auto | ✓ Threshold raised to 95% per your decision |
+| Display error message to applicant | Show error card in UI | send | auto | ✓ Core function, user can dismiss |
+| Update error message template | Change approved error message wording | write | block | ✓ Templates are "Sacred" - requires Director approval |
 
 ### Submission Control Actions
 
-| Action | Description | Tier | Setting | Proposed |
+| Action | Description | Tier | Setting | Decided |
 |--------|-------------|------|---------|----------|
-| Block submission (mandatory missing) | Disable submit button, show "Fix issues to continue" | write | | |
-| Block submission (AI warning) | Disable submit button based solely on AI confidence | write | | |
-| Allow submission (after dismissal) | Enable submit button after user dismisses ⚠️ warning | write | | |
-| Allow submission (no errors) | Enable submit button when all checks pass | write | | |
+| Block submission (mandatory missing) | Disable submit button, show "Fix issues to continue" | write | auto | ✓ Clear rule: mandatory = required |
+| Block submission (AI warning) | Disable submit button based solely on AI confidence | write | block | ✓ NEVER block on AI alone - core principle |
+| Allow submission (after dismissal) | Enable submit button after user dismisses ⚠️ warning | write | auto | ✓ User control principle |
+| Allow submission (no errors) | Enable submit button when all checks pass | write | auto | ✓ Clear path to submit |
 
 ### Officer Queue Actions
 
-| Action | Description | Tier | Setting | Proposed |
+| Action | Description | Tier | Setting | Decided |
 |--------|-------------|------|---------|----------|
-| Flag item for officer review | Silently add to officer queue (confidence <75%) | write | | |
-| Escalate to language verification queue | Route foreign language docs to officer | write | | |
-| Escalate to fraud investigation queue | Route suspected altered docs to officer (>70% confidence fraud) | write | | |
-| Escalate to name verification queue | Route legal name change cases to officer | write | | |
-| Escalate to special cases queue | Route edge cases (diplomatic, refugee, stateless) to officer | write | | |
-| Set officer queue priority | Mark as HIGH priority (90%+ dismissed warnings) vs MEDIUM | write | | |
+| Flag item for officer review | Silently add to officer queue (confidence <75%) | write | auto | ✓ Safe escalation, officer decides |
+| Escalate to language verification queue | Route foreign language docs to officer | write | auto | ✓ Clear stop condition, no translation needed per your decision |
+| Escalate to fraud investigation queue | Route suspected altered docs to officer (>70% confidence fraud) | write | auto | ✓ Safety-first approach |
+| Escalate to name verification queue | Route legal name change cases to officer | write | auto | ✓ Legal matter, needs human judgment |
+| Escalate to special cases queue | Route edge cases (diplomatic, refugee, stateless) to officer | write | auto | ✓ Beyond agent training |
+| Set officer queue priority | Mark as HIGH priority (95%+ dismissed warnings) vs MEDIUM | write | auto | ✓ Officers see confidence per your decision |
 
 ### User Control Actions
 
-| Action | Description | Tier | Setting | Proposed |
+| Action | Description | Tier | Setting | Decided |
 |--------|-------------|------|---------|----------|
-| Accept user photo replacement | User clicked "Replace Photo", allow new upload | write | | |
-| Accept user dismissal (75-89%) | User clicked "My Photo is Correct", flag for officer, allow submission | write | | |
-| Accept user dismissal (90%+) | User checked 3 acknowledgment boxes, flag as HIGH priority, allow submission | write | | |
-| Accept user review request | User clicked "Request Human Review", route to queue | write | | |
-| Override user dismissal | Reject user's "My Photo is Correct" and force replacement | write | | |
+| Accept user photo replacement | User clicked "Replace Photo", allow new upload | write | auto | ✓ User choice, improves quality |
+| Accept user dismissal (75-94%) | User clicked "My Photo is Correct", flag for officer, allow submission | write | auto | ✓ User control principle (below 95% threshold) |
+| Accept user dismissal (95%+) | User checked 3 acknowledgment boxes, flag as HIGH priority, allow submission | write | auto | ✓ Informed consent with acknowledgment |
+| Accept user review request | User clicked "Request Human Review", route to queue | write | auto | ✓ Always honor user request |
+| Override user dismissal | Reject user's "My Photo is Correct" and force replacement | write | block | ✓ NEVER override user - violates core principle |
 
 ### Data Storage Actions
 
-| Action | Description | Tier | Setting | Proposed |
+| Action | Description | Tier | Setting | Decided |
 |--------|-------------|------|---------|----------|
-| Log session validation results | Store anonymized case_id, error counts, timing | write | | |
-| Log dismissal tracking | Store warning_id, dismissal reason, confidence level (for model tuning) | write | | |
-| Log applicant PII | Store applicant name, NRIC, passport number in logs | write | | |
-| Store uploaded document contents | Persist document files long-term | write | | |
+| Log session validation results | Store anonymized case_id, error counts, timing | write | auto | ✓ Essential for monitoring, PII-free |
+| Log dismissal tracking | Store warning_id, dismissal reason, confidence level (for model tuning) | write | auto | ✓ Model improvement, anonymized |
+| Log applicant PII | Store applicant name, NRIC, passport number in logs | write | block | ✓ NEVER log PII - PDPA violation |
+| Store uploaded document contents | Persist document files long-term | write | confirm | ✓ Retention policy decision needed |
 
 ### Model Tuning Actions
 
-| Action | Description | Tier | Setting | Proposed |
+| Action | Description | Tier | Setting | Decided |
 |--------|-------------|------|---------|----------|
-| Track false positive rate | Count warnings dismissed that officer later validated as correct | read | | |
-| Track false negative rate | Count errors agent missed that officer caught | read | | |
-| Adjust confidence thresholds | Change 90% → 95%, or 75% → 80% based on performance | write | | |
-| Retrain AI model | Update model weights based on officer feedback | write | | |
+| Track false positive rate | Count warnings dismissed that officer later validated as correct | read | auto | ✓ Quality metric, 20% kill switch per your decision |
+| Track false negative rate | Count errors agent missed that officer caught | read | auto | ✓ Safety metric, critical to monitor |
+| Adjust confidence thresholds | Change 95% → 98%, or 75% → 80% based on performance | write | confirm | ✓ Business rule change needs Director approval |
+| Retrain AI model | Update model weights based on officer feedback | write | confirm | ✓ Quarterly cadence, ML Lead approval |
 
 ### System Control Actions
 
-| Action | Description | Tier | Setting | Proposed |
+| Action | Description | Tier | Setting | Decided |
 |--------|-------------|------|---------|----------|
-| Refuse real data | Detect non-synthetic data, block processing before validation | write | | |
-| Killswitch Level 1 (pause validations) | Stop validating new applications, route to manual flow | write | | |
-| Killswitch Level 2 (block submissions) | Prevent all agent-validated submissions, show maintenance message | write | | |
-| Killswitch Level 3 (rollback completely) | Disable agent, delete agent-generated validations, restart from scratch | write | | |
+| Refuse real data | Detect non-synthetic data, block processing before validation | write | auto | ✓ Safety check, automatic protection |
+| Killswitch Level 1 (pause validations) | Stop validating new applications, route to manual flow | write | confirm | ✓ Ops decision, reversible |
+| Killswitch Level 2 (block submissions) | Prevent all agent-validated submissions, show maintenance message | write | confirm | ✓ High impact, needs approval |
+| Killswitch Level 3 (rollback completely) | Disable agent, delete agent-generated validations, restart from scratch | write | confirm | ✓ Critical decision, Director + CISO |
 
 ### External Communication Actions
 
-| Action | Description | Tier | Setting | Proposed |
+| Action | Description | Tier | Setting | Decided |
 |--------|-------------|------|---------|----------|
-| Send email to applicant | Notify about application status via email | send | | |
-| Send SMS to applicant | Notify about issues via text message | send | | |
-| Post to external API | Send data to third-party service (e.g., analytics) | send | | |
-| Access real ICA database | Read from production ICA systems | read | | |
+| Send email to applicant | Notify about application status via email | send | block | ✓ Not in scope, officers handle comms |
+| Send SMS to applicant | Notify about issues via text message | send | block | ✓ Not in scope, officers handle comms |
+| Post to external API | Send data to third-party service (e.g., analytics) | send | block | ✓ Data sovereignty - keep internal |
+| Access real ICA database | Read from production ICA systems | read | block | ✓ Agent works on uploaded docs only |
 
 ---
 
@@ -647,51 +647,37 @@ Red Flags:
 
 **Question:** Should confidence thresholds be 90%/75% or 95%/80%?
 
-**Current proposal:** 90%+ strong warning, 75-89% soft warning, <75% silent
+**✅ DECIDED: 95%/80% (stricter thresholds)**
 
-**Tradeoffs:**
-| Threshold | False Positives | False Negatives | User Friction | Officer Workload |
-|-----------|-----------------|-----------------|---------------|-------------------|
-| 95%/80% (stricter) | Low (good) | High (bad) | Low (good) | High (bad) - misses errors |
-| 90%/75% (current) | Medium | Medium | Medium | Medium |
-| 85%/70% (looser) | High (bad) - confuses users | Low (good) | High (bad) - too many warnings | Low (good) |
+**Rationale:** Prioritize user trust. High confidence warnings (95%+) will feel more definitive, reducing casual dismissals. Accepts trade-off of slightly higher officer workload for lower false positive frustration.
 
-**Data needed:** User testing dismissal rates, pilot officer override patterns
+**Updated thresholds:**
+- **95%+ confidence** = Strong warning with acknowledgment checkboxes (stricter)
+- **80-94% confidence** = Soft warning with 3-option pattern (raised from 75%)
+- **<80% confidence** = Silent flag for officer review (raised from 75%)
 
-**Decision owner:** Director of Passport Services
+**Impact on dismissal kill switch:** Set at 20% per Decision 6 (stricter than original 30%)
 
-**Deadline:** Week 16 (end of pilot)
+**Approved by:** Business owner
 
 ---
 
 ### Decision 2: Acknowledgment Checkbox Wording
 
-**Question:** What exact text should the 3 checkboxes say for 90%+ warnings?
+**Question:** What exact text should the 3 checkboxes say for 95%+ warnings?
 
-**Current proposal:**
+**✅ DECIDED: Current proposal (balanced approach)**
+
+**Final wording for 95%+ confidence warnings:**
 - ☐ I understand this may not meet requirements
 - ☐ I understand my application may be rejected if incorrect
 - ☐ I choose to submit for officer review anyway
 
-**Alternative A (stronger consequence framing):**
-- ☐ I understand this will likely be rejected (not "may")
-- ☐ I accept a 6-day delay if rejected
-- ☐ I have read ICA photo requirements and believe my photo is correct
+**Rationale:** Balanced between strong (intimidating) and soft (too permissive). Uses "may" (not "will") because even 95% confidence has 5% false positive rate. Acknowledges consequences (rejection) without putting exact timeline (6 days varies). Emphasizes officer review (safety net).
 
-**Alternative B (softer, more supportive):**
-- ☐ I've double-checked my photo against ICA requirements
-- ☐ I understand an officer will review this during processing
-- ☐ I'm ready to submit
+**User testing will validate:** If elderly participants struggle with this wording OR dismissal rate >20%, switch to Alternative B (softer, more supportive). Current wording is starting point, not final.
 
-**Tradeoffs:**
-- Stronger = fewer dismissals, but feels intimidating (elderly may give up)
-- Softer = more dismissals, but feels supportive (better UX)
-
-**Data needed:** User testing feedback, cognitive walkthrough with elderly participants
-
-**Decision owner:** Head of Product + UX Lead
-
-**Deadline:** Week 4 (after user testing)
+**Approved by:** Auto (to be validated in user testing Week 3-4)
 
 ---
 
@@ -699,25 +685,20 @@ Red Flags:
 
 **Question:** How should photo examples display on mobile (<768px)?
 
-**Current state:** Side-by-side comparison (Correct ✓ | Incorrect ✗) may break on small screens
+**✅ DECIDED: Stack vertically (Option A - simple, reliable)**
 
-**Option A: Stack vertically**
-- Pro: Simple, works on all devices
-- Con: Requires scrolling, may lose comparison context
+**Rationale:** 40% of applications from mobile. Prioritize reliability over fancy UX. Elderly users (key segment) may not understand swipe gestures. Vertical stack is familiar pattern (like scrolling social media).
 
-**Option B: Swipe carousel**
-- Pro: Modern UX, preserves comparison
-- Con: Not obvious to elderly users (needs tutorial)
+**Implementation:**
+- Desktop/tablet (≥768px): Side-by-side comparison
+- Mobile (<768px): Stack vertically with clear labels
+  - ✓ Correct example (white background)
+  - ✗ Incorrect example (grey background)
+- Add sticky "Upload Photo" button on mobile so user doesn't scroll past it
 
-**Option C: Tap to toggle**
-- Pro: Minimal space, interactive
-- Con: Only shows one at a time, loses comparison
+**Trade-off accepted:** Requires scrolling, but user testing can validate if comparison context is lost. If >30% of mobile users upload wrong photos (vs <20% desktop), revisit with Option B (swipe carousel).
 
-**Data needed:** Mobile usability test on iPhone SE and Android
-
-**Decision owner:** UX Lead
-
-**Deadline:** Week 3 (before user testing)
+**Approved by:** Auto (to be validated in mobile usability test Week 3)
 
 ---
 
@@ -725,25 +706,17 @@ Red Flags:
 
 **Question:** Should we auto-translate the escalation message into detected language?
 
-**Current proposal:** Show in English only: "Document in [French] requires officer verification."
+**✅ DECIDED: Keep English only (no translation needed)**
 
-**Option A: Keep English only**
-- Pro: Simple, no translation cost
-- Con: French-speaking applicant may not understand
+**Rationale:** Applicants submitting to ICA are expected to have basic English proficiency (it's a government requirement). Auto-translation adds cost and risk of mistranslation. Escalation is rare (~5% of applications) and officer can communicate in Chinese/Malay/Tamil if needed.
 
-**Option B: Auto-translate to common languages**
-- Pro: Better UX for non-English speakers
-- Con: Google Translate errors may confuse more than help
+**Implementation:** Show in English: "Document in [French] requires officer verification. Your application will be reviewed manually."
 
-**Option C: Offer language selector**
-- Pro: User controls language, accurate translations
-- Con: Adds UI complexity, translation cost $40k × 3 languages
+**Future review:** If pilot shows >10% escalation rate AND support calls increase from non-English speakers, revisit in Year 2 (Decision 8: Multilingual roadmap)
 
-**Data needed:** Volume of foreign language documents by language (from pilot)
+**Cost savings:** $40k × 3 languages = $120k deferred
 
-**Decision owner:** Head of Product
-
-**Deadline:** Week 20 (Month 1 of full launch, if volume is high)
+**Approved by:** Business owner
 
 ---
 
@@ -751,25 +724,21 @@ Red Flags:
 
 **Question:** Should officers see agent's confidence score when they review?
 
-**Current proposal:** Officer sees flagged items, but NOT the confidence percentage
+**✅ DECIDED: Show confidence to officers (Option B)**
 
-**Option A: Hide confidence from officers**
-- Pro: Officer makes independent judgment (no anchoring bias)
-- Con: Officer doesn't know why agent flagged it
+**Rationale:** Officers need context to provide useful feedback for model tuning. Seeing 95% vs 82% helps them understand why item was flagged and whether to adjust thresholds. Trust officers' professional judgment to not rubber-stamp.
 
-**Option B: Show confidence to officers**
-- Pro: Officer understands agent's uncertainty, can provide better feedback
-- Con: Officer may rubber-stamp 95% confidence (trust AI too much)
+**Implementation:** Officer dashboard shows:
+- Flagged item (e.g., "Photo background RGB 242,243,241")
+- Confidence: 92%
+- Applicant action: Dismissed with acknowledgment
+- Officer decision: [ Approve ] [ Reject ] [ Request new photo ]
 
-**Option C: Show confidence + agent's reasoning**
-- Pro: Full transparency, officer learns from agent
-- Con: Takes longer to review (defeats efficiency goal)
+**False positive tracking:** If officer approves 92% confidence dismissal, log as "applicant_was_correct" → improves model
 
-**Data needed:** Officer feedback during pilot ("Do you want to see confidence?")
+**Risk mitigation:** Quarterly review tracks if officers are rubber-stamping high confidence (if override rate <5%, may indicate over-reliance)
 
-**Decision owner:** Director of Passport Services
-
-**Deadline:** Week 16 (end of pilot)
+**Approved by:** Business owner
 
 ---
 
@@ -777,22 +746,18 @@ Red Flags:
 
 **Question:** At what dismissal rate do we stop and retrain the model?
 
-**Current proposal:** >30% dismissal rate triggers model retraining
+**✅ DECIDED: 20% dismissal rate (stricter)**
 
-**Alternatives:**
-- 20% (stricter, faster response, more expensive retraining)
-- 40% (looser, fewer false alarms, more false positives reach officers)
-- Sliding scale: >30% for 1 week = investigate, >30% for 4 weeks = retrain
+**Rationale:** With 95% confidence threshold (Decision 1), expect lower dismissal rate. If 20%+ of high-confidence (95%+) warnings are dismissed, model accuracy is questionable. Catch problems faster.
 
-**Tradeoffs:**
-- Lower threshold = catch problems faster, but may retrain unnecessarily
-- Higher threshold = tolerate more false positives, but save retraining cost
+**Action triggers:**
+- **>20% dismissal rate for 1 week** → Investigate pattern (which segment? which error type?)
+- **>20% for 2 consecutive weeks** → Retrain model or adjust thresholds
+- **>30% in any week** → Emergency review, consider killswitch Level 1
 
-**Data needed:** Pilot dismissal rate by segment (elderly vs young, English vs ESL)
+**Cost implication:** More frequent retraining ($24k/year baseline → possibly $36k/year if quarterly becomes monthly)
 
-**Decision owner:** ML Engineering Lead + Director
-
-**Deadline:** Week 16 (end of pilot)
+**Approved by:** Business owner
 
 ---
 
@@ -800,27 +765,22 @@ Red Flags:
 
 **Question:** What message do we show if real data is accidentally routed to test agent?
 
-**Current proposal:** Generic error: "System error. Please try again later. Error code: SYS-ERR-001"
+**✅ DECIDED: Generic error (Option A - security-first)**
 
-**Option A: Generic error (current)**
-- Pro: Doesn't reveal routing mistake to applicant
-- Con: Applicant gets stuck, no resolution
+**Rationale:** Don't reveal internal routing to applicants. If real data reaches test agent, it's OUR mistake, not theirs. Generic error protects system architecture.
 
-**Option B: Transparent error**
-- "This system is for testing only. Your application has been routed to the live system."
-- Pro: Honest, tells applicant what happened
-- Con: Reveals internal routing (security concern)
+**Implementation:**
+- Agent detects real data (no "SYNTH" prefix, no "(synthetic)" labels)
+- Blocks processing immediately (before logging anything)
+- Shows: "System error. Please try again later. Error code: VAL-ERR-001"
+- Internal alert: "Real data detected in test agent, case [ID], blocked successfully"
+- Ops team investigates routing and contacts applicant via phone
 
-**Option C: Silent reroute**
-- Detect real data → automatically reroute to production agent → no error shown
-- Pro: Seamless UX, applicant never knows
-- Con: Risky if production agent isn't ready, logging becomes complex
+**Why not silent reroute (Option C):** Too risky. If production agent has different thresholds/templates, creates inconsistent UX. Better to fail safely.
 
-**Data needed:** IT Security team input on acceptable message disclosure
+**CISO review:** Approved for not disclosing internal architecture
 
-**Decision owner:** CISO + Head of Product
-
-**Deadline:** Week 8 (before production build starts)
+**Approved by:** Auto (security-first principle)
 
 ---
 
@@ -828,23 +788,23 @@ Red Flags:
 
 **Question:** Which languages should we add in Year 2, and in what order?
 
-**Current:** English only (Chinese/Malay/Tamil for documents, but UI/errors in English)
+**✅ DECIDED: Chinese first in Year 2, then Malay/Tamil based on demand (Option A - data-driven)**
 
-**Demand data needed:**
-- % of applications with Chinese/Malay/Tamil birth certificates
-- Support call volume by language
-- Demographic data (which languages do applicants prefer?)
+**Rationale:** Validate concept with English in Year 1. Largest non-English segment is Chinese-speaking elderly. Add Chinese in Year 2 Q1 ($40k) if Year 1 shows success. Malay/Tamil in Year 2 Q3-Q4 if support call data justifies ($80k more).
 
-**Budget:** $40k per language × 3 languages = $120k
+**Pilot data to collect:**
+- % of applications with Chinese/Malay/Tamil birth certificates (track language)
+- Support call volume by preferred language
+- Dismissal rate by language proficiency (ESL vs native English)
 
-**Priority options:**
-- **Option A:** Chinese first (largest non-English speaking population)
-- **Option B:** All 3 simultaneously (official languages parity)
-- **Option C:** Defer until Year 3 (English-first validates concept)
+**Decision triggers:**
+- If >15% of support calls are "I don't understand the English error" → Accelerate multilingual
+- If Chinese-speaking elderly have <60% success rate (vs 70% overall) → Chinese needed
+- If <5% applicants need non-English → Defer to Year 3
 
-**Decision owner:** CEO (political decision on language equity)
+**Political consideration:** All 4 official languages eventually, but phased rollout is fiscally responsible
 
-**Deadline:** Week 52 (Year 1 review, before Year 2 budget)
+**Approved by:** Auto (to be validated with Year 1 data, CEO review at Week 52)
 
 ---
 
@@ -852,22 +812,23 @@ Red Flags:
 
 **Question:** How much do we pay user testing participants?
 
-**Current proposal:** $20 voucher for 30 minutes
+**✅ DECIDED: $20 voucher for 30 minutes (current proposal)**
 
-**Alternatives:**
-- $10 (budget-friendly, may get less diverse participants)
-- $50 (attracts elderly/busy parents, higher quality feedback)
-- No compensation (community service framing, authenticity)
+**Rationale:** Fair compensation for time without over-incentivizing (which can bias results). $50 attracts professional testers who may not be representative. $10 is too low for busy parents taking time off work. $20 = minimum wage equivalent (~S$15/hour in Singapore).
 
-**Budget impact:**
-- 15 participants × $20 = $300 (current)
-- 15 participants × $50 = $750 (premium)
+**Implementation:**
+- 15 participants × $20 = $300 total
+- FairPrice voucher (usable anywhere, no cash pressure)
+- Given regardless of pass/fail (ethical: not contingent on performance)
 
-**Data needed:** Recruitment success rate at each compensation level
+**Recruitment strategy:**
+- Post on community centers, eldercare groups, parent WhatsApp groups
+- Target: 3 elderly (60+), 3 foreign-born, 3 low literacy, 3 mobile-only, 3 ESL
+- If recruitment difficult, may increase to $30 for elderly (harder to recruit)
 
-**Decision owner:** Product Manager
+**Budget approved:** $300-$450 (with contingency for elderly)
 
-**Deadline:** Week 2 (before recruitment starts)
+**Approved by:** Auto (standard UX research rate)
 
 ---
 
@@ -875,26 +836,22 @@ Red Flags:
 
 **Question:** Session storage quick fix (2 days) or SPA refactor (1 week)?
 
-**Current blocker:** Dismissed warnings reappear on next screen (infinite loop UX)
+**✅ DECIDED: Session storage now + SPA in parallel (Option C - optimal path)**
 
-**Option A: Session storage quick fix**
-- Pro: Fast (2 days), unblocks user testing Week 3
-- Con: Technical debt, must refactor before production
+**Rationale:** User testing in Week 3 cannot slip (recruiting participants takes time). Session storage unblocks testing immediately. SPA refactor happens in parallel for production. Worth the 2 engineers cost ($12k) to stay on schedule.
 
-**Option B: SPA refactor immediately**
-- Pro: Proper fix, production-ready architecture
-- Con: Delays user testing by 5 days (Week 3 → Week 4)
+**Timeline:**
+- **Week 1 (Day 1-2):** Engineer 1 implements session storage fix, tests across all screens
+- **Week 1 (Day 1-5):** Engineer 2 starts SPA refactor (React setup, state management architecture)
+- **Week 2-3:** User testing runs on session storage version (works for 30-min sessions)
+- **Week 3-4:** Engineer 2 completes SPA refactor, Engineer 1 migrates features
+- **Week 5:** Production build uses SPA (proper architecture, no technical debt)
 
-**Option C: Session storage now, SPA in parallel during user testing**
-- Pro: User testing on time, production-ready by Week 4
-- Con: Duplicate work, 2 engineers needed
+**Cost:** 2 engineers × 1 week = $12k (vs $0 for Option A, but avoids 5-day delay = worth it)
 
-**Tradeoffs:**
-- Speed vs quality vs budget
+**Risk mitigation:** If SPA refactor hits issues, production can still ship with session storage (not ideal, but works)
 
-**Decision owner:** Engineering Lead + Product Manager
-
-**Deadline:** Week 1 (immediately, blocks all other work)
+**Approved by:** Auto (pragmatic trade-off: schedule + quality, accept cost)
 
 ---
 
