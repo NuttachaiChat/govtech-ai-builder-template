@@ -856,3 +856,587 @@ Red Flags:
 ---
 
 **These 10 open decisions must be resolved before full production launch. Some can wait until pilot data is available (Week 16), others must be decided sooner (Week 1-4).**
+
+---
+
+## Engineering Specifications (Added by Engineering Lead)
+
+**As the engineering lead who will build this, I cannot build from the PRD without these technical specifications:**
+
+### 1. API Contracts
+
+**Missing from PRD:** No endpoint definitions, request/response schemas
+
+**Required specifications:**
+
+#### POST /api/v1/validate/document
+**Request:**
+```json
+{
+  "case_id": "PASS-2026-SYNTH-123456",
+  "document_type": "photo|birth_certificate|nric_front|nric_back|passport",
+  "file": "base64_encoded_file_data",
+  "mime_type": "image/jpeg|image/png|application/pdf",
+  "file_size_bytes": 245000,
+  "applicant_context": {
+    "application_type": "child_renewal",
+    "applicant_name": "Tan Wei Lin (synthetic)",
+    "applicant_dob": "2018-03-15"
+  }
+}
+```
+
+**Response (Success):**
+```json
+{
+  "validation_id": "VAL-2026-789ABC",
+  "document_type": "photo",
+  "status": "verified|warning|error",
+  "confidence": 0.92,
+  "error_card": {
+    "type": "strong_warning",
+    "icon": "⚠️",
+    "title": "Photo likely does not meet requirements",
+    "description": "The uploaded photo appears to have a coloured background...",
+    "actions": ["replace", "keep", "review"],
+    "ica_requirement_link": "https://ica.gov.sg/photo-requirements"
+  }
+}
+```
+
+**Response (Error):**
+```json
+{
+  "error_code": "VAL_TIMEOUT|VAL_MODEL_UNAVAILABLE|VAL_FILE_TOO_LARGE",
+  "message": "Validation service temporarily unavailable. Please try again.",
+  "retry_after_seconds": 30
+}
+```
+
+#### GET /api/v1/application/{case_id}/status
+Returns validation status for all documents in application
+
+#### POST /api/v1/dismissal
+Log user dismissal of warning
+
+#### POST /api/v1/escalation
+Add case to officer queue
+
+**Decision needed:** Which API style? REST? GraphQL? gRPC?
+
+---
+
+### 2. Performance Requirements
+
+**Missing from PRD:** No latency targets, concurrent user limits, file size limits
+
+**Required specifications:**
+
+| Metric | Target | Rationale |
+|--------|--------|-----------|
+| Photo validation latency (P95) | <3 seconds | User expects instant feedback after upload |
+| Document validation latency (P95) | <5 seconds | PDFs are larger, OCR takes time |
+| Page load time | <2 seconds | Government service standard |
+| Concurrent users | 100 simultaneous validations | Peak: 15,000/week ÷ 40 hours = 375/hour ÷ 4 quarters = ~100 |
+| File size limit (photo) | 5 MB | 600 DPI photo ≈ 2 MB, 2× buffer |
+| File size limit (PDF) | 10 MB | Birth certificate scans |
+| API rate limit | 10 requests/minute per session | Prevent abuse |
+| Database query time (P95) | <500 ms | For real-time dashboard |
+
+**Load spike planning:**
+- Chinese New Year: 3× normal volume (45,000/week)
+- December holidays: 2× normal volume (30,000/week)
+- Infrastructure must scale to handle 300 concurrent users
+
+**Decision needed:** What happens if validation exceeds latency target? Show "Still processing" spinner? Timeout and ask user to retry?
+
+---
+
+### 3. AI Model Specification
+
+**Missing from PRD:** Which model, training data requirements, serving infrastructure
+
+**Required specifications:**
+
+#### Photo Background Detection
+- **Model:** AWS Rekognition `DetectLabels` API OR custom TensorFlow CNN
+- **Input:** JPEG/PNG image, max 5 MB
+- **Output:** Confidence score 0.0-1.0 that background is white
+- **Training data needed (if custom):** 
+  - 10,000 passport photos (5,000 compliant white background, 5,000 non-compliant)
+  - Labeled by ICA officers (ground truth)
+  - Diverse lighting conditions (studio, home, outdoor)
+- **Latency requirement:** <2 seconds (within 3-second total validation target)
+- **Fallback:** If model unavailable, flag all photos for officer review (confidence = 0%)
+
+#### Face Detection
+- **Model:** OpenCV Haar Cascade OR cloud Face Detection API
+- **Checks:** Face centered (±10% of center), neutral expression, eyes open
+- **Training:** Pre-trained model sufficient (standard face detection)
+
+#### Name Matching
+- **Algorithm:** Levenshtein distance for typo detection (1-2 character edits)
+- **Library:** Python `difflib` or `fuzzywuzzy`
+- **Confidence formula:**
+  - Exact match = 100%
+  - 1 character diff = 90%
+  - 2 character diff = 75%
+  - Hyphen/space difference = 70%
+  - >2 character diff = escalate (legal name change)
+
+#### Document Presence Check
+- **Not AI:** Simple boolean (file exists or not)
+- **Confidence:** Always 100%
+
+**Decision needed:** Build custom model or use cloud API?
+- **Custom:** $30k training cost, own the IP, no per-API-call cost
+- **Cloud API:** $0.10/call × 780,000/year = $78k/year, but no training needed
+
+**Recommendation:** Start with cloud API for pilot, train custom model if cost >$50k/year in Year 1
+
+---
+
+### 4. Data Schemas
+
+**Missing from PRD:** Full application object, database tables
+
+**Required specifications:**
+
+#### Database: PostgreSQL (or to be decided)
+
+**Table: applications**
+```sql
+CREATE TABLE applications (
+  case_id VARCHAR(50) PRIMARY KEY,
+  application_type VARCHAR(50) NOT NULL,
+  applicant_name_encrypted TEXT, -- PII encrypted at rest
+  applicant_dob DATE,
+  parent_guardian_name_encrypted TEXT,
+  parent_nric_hash VARCHAR(64), -- Hashed, not stored plaintext
+  status VARCHAR(20), -- draft, submitted, approved, rejected
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  submitted_at TIMESTAMP
+);
+```
+
+**Table: documents**
+```sql
+CREATE TABLE documents (
+  document_id UUID PRIMARY KEY,
+  case_id VARCHAR(50) REFERENCES applications(case_id),
+  document_type VARCHAR(50) NOT NULL,
+  file_path TEXT NOT NULL, -- S3 path or local disk
+  file_size_bytes INTEGER,
+  mime_type VARCHAR(50),
+  uploaded_at TIMESTAMP NOT NULL,
+  validation_status VARCHAR(20), -- verified, warning, error, pending
+  validation_confidence DECIMAL(3,2) -- 0.00 to 1.00
+);
+```
+
+**Table: validations (for logging/analytics)**
+```sql
+CREATE TABLE validations (
+  validation_id UUID PRIMARY KEY,
+  case_id VARCHAR(50),
+  document_id UUID REFERENCES documents(document_id),
+  error_type VARCHAR(50), -- photo_background, missing_birth_cert
+  confidence DECIMAL(3,2),
+  shown_to_applicant BOOLEAN,
+  applicant_action VARCHAR(20), -- dismissed, replaced, review_requested
+  officer_verdict VARCHAR(20), -- applicant_correct, ai_correct, null
+  created_at TIMESTAMP NOT NULL
+);
+```
+
+**Table: officer_queue**
+```sql
+CREATE TABLE officer_queue (
+  queue_id UUID PRIMARY KEY,
+  case_id VARCHAR(50) REFERENCES applications(case_id),
+  queue_type VARCHAR(50), -- language_verification, fraud_investigation, etc.
+  priority VARCHAR(10), -- high, medium, low
+  reason TEXT,
+  created_at TIMESTAMP NOT NULL,
+  assigned_to VARCHAR(50), -- officer username
+  resolved_at TIMESTAMP,
+  resolution VARCHAR(20) -- approved, rejected, escalated
+);
+```
+
+**Decision needed:** Data retention policy
+- How long to keep uploaded documents? 7 days? 30 days? Until application processed?
+- How long to keep validation logs? 1 year? 3 years (for model retraining)?
+- PII encryption: Which encryption standard? AES-256? AWS KMS?
+
+---
+
+### 5. Error Handling & Edge Cases
+
+**Missing from PRD:** What to do when things fail
+
+**Required specifications:**
+
+| Scenario | Engineering Response | User-Facing Message |
+|----------|----------------------|---------------------|
+| Network timeout on upload | Retry 3× with exponential backoff (1s, 2s, 4s), then fail | "Upload failed. Please check your connection and try again." |
+| AI model returns 500 error | Fallback: Flag for officer review (confidence = 0%), don't block | "We're experiencing technical issues. Your photo will be reviewed by an officer." |
+| Concurrent edits (user replaces photo mid-validation) | Cancel previous validation, start new one | No message (seamless) |
+| Duplicate submission (same application twice) | Idempotency: Return existing validation result | No message (seamless) |
+| File too large (>5 MB photo) | Reject at upload, client-side validation | "Photo too large. Maximum size is 5 MB. Please compress or retake photo." |
+| Corrupted file (can't read JPEG) | Return error immediately | "File is corrupted or invalid format. Please upload a JPEG or PNG." |
+| Session expired during upload | Require re-authentication | "Your session expired. Please log in again." |
+| Database connection lost | Retry 3×, then show maintenance message | "System temporarily unavailable. Please try again in a few minutes." |
+| Out of disk space (file storage full) | Alert ops team, reject new uploads | "System at capacity. Please try again later." |
+
+**Retry policy (engineering standard):**
+- **Transient errors:** Retry 3× with exponential backoff
+- **Permanent errors:** Don't retry (corrupted file, file too large)
+- **Circuit breaker:** If AI model fails 10× in 1 minute, stop calling it for 5 minutes (don't overwhelm failed service)
+
+**Decision needed:** What's the user experience during AI model outage?
+- **Option A:** Flag all photos for officer review (no blocking, but high officer workload)
+- **Option B:** Show "System under maintenance" (blocks applicants, better than wrong decisions)
+- **Recommendation:** Option A (never block applicants, per core principle)
+
+---
+
+### 6. Security Specifications
+
+**Missing from PRD:** Authentication, encryption, CSRF protection
+
+**Required specifications:**
+
+#### Authentication
+- **Method:** SingPass integration (Singapore government standard)
+- **Flow:** OAuth 2.0 Authorization Code flow
+- **Session:** JWT token, 30-minute expiry, refresh token valid 24 hours
+- **Stored:** HttpOnly, Secure, SameSite=Strict cookies
+
+#### Authorization
+- **Applicants:** Can only access own application (case_id tied to NRIC)
+- **Officers:** Can access all applications in their queue
+- **Admins:** Can access all applications + dashboards
+
+#### Encryption
+- **In transit:** TLS 1.3 minimum
+- **At rest:** 
+  - PII fields (names, NRIC): AES-256-GCM encryption
+  - Uploaded files: Server-side encryption (SSE-S3 if using AWS)
+- **Key management:** AWS KMS or on-premise HSM
+
+#### CSRF Protection
+- **Method:** Double-submit cookie pattern
+- **Token:** 256-bit random token in cookie + request header
+- **Expiry:** 30 minutes (tied to session)
+
+#### Rate Limiting
+- **Per session:** 10 validation requests/minute (prevents abuse)
+- **Per IP:** 100 requests/hour (prevents DDoS)
+- **Exceeded:** HTTP 429 with Retry-After header
+
+#### File Upload Security
+- **Validation:** Check MIME type AND file signature (magic bytes), not just extension
+- **Antivirus:** Scan uploads with ClamAV or cloud service
+- **Sandboxing:** Process files in isolated container (prevent malicious PDF exploits)
+
+**Decision needed:** Who manages encryption keys?
+- **Option A:** AWS KMS (managed service, $1/key/month + $0.03/10k requests)
+- **Option B:** On-premise HSM (one-time $50k hardware cost, full control)
+- **Recommendation:** AWS KMS for pilot, migrate to HSM if cost >$10k/year
+
+---
+
+### 7. Infrastructure & Deployment
+
+**Missing from PRD:** Hosting, database, CI/CD
+
+**Required specifications:**
+
+#### Hosting (to be decided)
+- **Option A:** AWS (ap-southeast-1 Singapore region for low latency)
+- **Option B:** On-premise (ICA data center, full data sovereignty)
+- **Recommendation:** AWS for pilot (fast setup), migrate to on-premise for production if required by policy
+
+#### Architecture
+```
+[User Browser]
+     |
+     v
+[CloudFront CDN] -- Static assets (CSS, JS, images)
+     |
+     v
+[Application Load Balancer] -- TLS termination, health checks
+     |
+     v
+[ECS Fargate / EC2] -- Application servers (Node.js + Python)
+  - API Gateway: Express.js
+  - Validation Service: Python Flask
+  - Worker Queue: SQS for async validation
+     |
+     +-- [RDS PostgreSQL] -- Application/validation data
+     |
+     +-- [S3 / EFS] -- Uploaded documents
+     |
+     +-- [ElastiCache Redis] -- Session cache, rate limiting
+     |
+     +-- [AI Model]
+           - AWS Rekognition (cloud API)
+           OR
+           - SageMaker endpoint (custom model)
+```
+
+#### Scalability
+- **Horizontal scaling:** Auto-scale application servers based on CPU (target 70% CPU)
+- **Min capacity:** 2 instances (high availability)
+- **Max capacity:** 10 instances (handle 300 concurrent users)
+- **Database:** RDS with read replicas for dashboards
+
+#### Deployment
+- **CI/CD:** GitHub Actions
+  - On PR: Run tests, lint, security scan
+  - On merge to main: Deploy to staging
+  - Manual approval: Deploy to production
+- **Blue-green deployment:** Zero-downtime updates
+- **Rollback:** Keep previous 3 versions, 1-click rollback
+
+#### Backup & Recovery
+- **Database:** Automated daily snapshots, 7-day retention
+- **Files:** S3 versioning enabled, 30-day retention
+- **RPO (Recovery Point Objective):** <1 hour (how much data loss acceptable)
+- **RTO (Recovery Time Objective):** <30 minutes (how fast to recover)
+
+**Decision needed:** Where to host?
+- **AWS:** $2,000/month for pilot (2 servers + RDS + S3 + Rekognition)
+- **On-premise:** $50k one-time hardware + $5k/month ops
+- **Break-even:** 25 months (2 years)
+- **Recommendation:** AWS for 2-year pilot, then decide based on data sovereignty requirements
+
+---
+
+### 8. Monitoring & Alerting
+
+**Missing from PRD:** Real-time dashboards, alert thresholds
+
+**Required specifications:**
+
+#### Metrics to Track (Real-Time)
+| Metric | Tool | Dashboard | Alert Threshold |
+|--------|------|-----------|-----------------|
+| Validation latency (P95) | CloudWatch / Datadog | Operations dashboard | >5 seconds for 5 minutes |
+| API error rate | CloudWatch | Operations dashboard | >5% errors for 10 minutes |
+| Officer queue depth | Application DB | Business dashboard | >500 cases |
+| Dismissal rate | Application logs | Business dashboard | >20% for 1 week |
+| Concurrent users | Load balancer metrics | Operations dashboard | >250 (approaching capacity) |
+| Database connections | RDS metrics | Operations dashboard | >80% of max connections |
+| Disk usage (file storage) | S3 / EFS metrics | Operations dashboard | >80% capacity |
+
+#### Dashboards
+
+**Operations Dashboard (for engineers/ops):**
+- System health: Green/yellow/red status
+- Request rate (requests/second)
+- Error rate (%)
+- Latency (P50, P95, P99)
+- Active users
+- Database CPU/memory
+- Queue depth (SQS if using async processing)
+
+**Business Dashboard (for Director/Product):**
+- Applications processed today
+- Error rate (% with ≥1 error)
+- Dismissal rate (%)
+- Officer queue by priority (high/medium/low)
+- Completion time (avg, P95)
+- Top errors (chart)
+
+#### Alerts
+
+| Alert | Severity | Send To | Action |
+|-------|----------|---------|--------|
+| API error rate >5% for 10 min | Critical | On-call engineer (PagerDuty) | Check logs, restart services |
+| Validation latency >10s | High | Engineering Slack | Investigate AI model performance |
+| Officer queue >500 cases | Medium | Director email | Review dismissal rates, consider thresholds |
+| Dismissal rate >20% for 1 week | Medium | Product Manager email | Model retraining needed |
+| Database CPU >90% | Critical | On-call engineer | Scale up RDS instance |
+| Disk usage >90% | High | On-call engineer | Add storage or clean old files |
+
+**On-call rotation:**
+- Week 1: Engineer A (primary), Engineer B (backup)
+- Week 2: Engineer B (primary), Engineer A (backup)
+- Escalation: Engineering Lead → CTO → CISO
+
+**Decision needed:** Which monitoring tool?
+- **CloudWatch:** Free with AWS, basic features
+- **Datadog:** $15/host/month, better dashboards, alerting
+- **Prometheus + Grafana:** Free, self-hosted, full control
+- **Recommendation:** CloudWatch for pilot, upgrade to Datadog if free tier insufficient
+
+---
+
+### 9. Testing Requirements
+
+**Missing from PRD:** Test coverage targets, which flows to test
+
+**Required specifications:**
+
+#### Unit Tests
+- **Coverage target:** 80% line coverage minimum
+- **Framework:** Jest (JavaScript), pytest (Python)
+- **Run on:** Every commit (GitHub Actions)
+- **Scope:**
+  - Document validation logic
+  - Error message generation
+  - Confidence threshold rules
+  - Name matching algorithm
+  - API request/response parsing
+
+#### Integration Tests
+- **Coverage:** All critical user flows
+- **Framework:** Cypress (E2E), Postman (API)
+- **Run on:** Pre-deployment to staging
+- **Flows to test:**
+  1. Upload photo → Get warning → Dismiss → Submit (passes)
+  2. Upload photo → Get warning → Replace → Submit (passes)
+  3. Missing birth certificate → Upload → Submit (passes)
+  4. Foreign language document → Escalate to queue (passes)
+  5. Real data detected → Block (passes)
+  6. Upload 6 MB photo → Reject (file too large)
+  7. Concurrent photo replacement → Latest wins
+  8. Session expires mid-upload → Re-auth required
+
+#### Load Tests
+- **Tool:** JMeter or Locust
+- **Scenario:** 100 concurrent users, each uploading 3 documents
+- **Target:** P95 latency <5 seconds, 0% errors
+- **Run on:** Week before pilot launch, then quarterly
+
+#### Security Tests
+- **Tool:** OWASP ZAP (penetration testing)
+- **Checks:**
+  - SQL injection on all inputs
+  - CSRF token validation
+  - Rate limiting enforcement
+  - File upload exploits (malicious PDF)
+  - Authentication bypass attempts
+- **Run on:** Pre-production deployment
+- **External audit:** Hire security firm for $15k audit (in budget)
+
+#### User Acceptance Testing (UAT)
+- **Who:** 5 ICA officers, 2 product team members
+- **Duration:** 1 week (Week 12)
+- **Scenario:** Process 20 synthetic applications
+- **Pass criteria:** 
+  - All 3 leaders approve
+  - 0 critical bugs (data loss, security breach)
+  - <5 medium bugs (UX issues)
+
+**Decision needed:** Automated vs manual testing balance?
+- **Automated:** 80% (unit + integration + load)
+- **Manual:** 20% (UAT + exploratory testing)
+- **Recommendation:** Invest in automation up front, saves time in long run
+
+---
+
+### 10. Rollback & Disaster Recovery
+
+**Missing from PRD:** How to switch back to manual flow if agent fails
+
+**Required specifications:**
+
+#### Rollback Procedures
+
+**Scenario 1: Agent producing wrong validations (false positives)**
+- **Detection:** Dismissal rate >30% OR officer override >30%
+- **Action:** Killswitch Level 1 (pause validations)
+  1. Flip feature flag `AGENT_ENABLED=false` (in environment config)
+  2. All traffic routes to manual flow (officers review 100%)
+  3. Investigate logs, retrain model
+  4. Duration: 1-3 days
+- **Rollback time:** <5 minutes (feature flag flip)
+
+**Scenario 2: Critical security vulnerability**
+- **Detection:** CISO alert OR penetration test finding
+- **Action:** Killswitch Level 2 (block all agent submissions)
+  1. Maintenance page: "System under maintenance"
+  2. Block all API endpoints
+  3. Fix vulnerability, deploy patch
+  4. Security re-audit before re-enabling
+- **Rollback time:** <5 minutes (load balancer rule change)
+
+**Scenario 3: Data loss / corruption**
+- **Detection:** Database corruption OR accidental deletion
+- **Action:** Restore from backup
+  1. Stop application servers
+  2. Restore RDS snapshot (most recent, <1 hour old)
+  3. Restore S3 files from versioning
+  4. Restart application
+  5. Verify data integrity
+- **Recovery time:** 30 minutes (RTO target)
+- **Data loss:** <1 hour (RPO target)
+
+#### Disaster Recovery Plan
+
+**Data Center Failure (for on-premise deployment):**
+- **Primary:** ICA data center Singapore
+- **Backup:** Disaster recovery site (DR)
+- **Replication:** Real-time DB replication to DR
+- **Switchover:** 
+  - Automatic: If primary unreachable for 5 minutes
+  - Manual: Ops team approval required
+- **Recovery Time:** 1 hour
+
+**AWS Region Failure (for cloud deployment):**
+- **Primary region:** ap-southeast-1 (Singapore)
+- **Backup region:** ap-southeast-2 (Sydney)
+- **Multi-region setup:** Cost prohibitive for pilot
+- **Recovery:** Restore from backup in another region (6 hours)
+
+#### Testing DR Plan
+- **Frequency:** Quarterly
+- **Scenario:** Simulate data center failure
+- **Participants:** Engineering team + ops team
+- **Pass criteria:** Successfully switch to DR site within RTO (1 hour)
+
+**Decision needed:** Is multi-region DR required for pilot?
+- **Single region:** $2k/month, 6-hour RTO if region fails (rare)
+- **Multi-region:** $5k/month, 1-hour RTO, 99.99% availability
+- **Recommendation:** Single region for pilot, multi-region for production if uptime critical
+
+---
+
+## Summary of Engineering Decisions Needed
+
+**Critical (blocks development):**
+1. API style: REST vs GraphQL vs gRPC?
+2. AI model: Cloud API vs custom model?
+3. Database: PostgreSQL vs MongoDB vs DynamoDB?
+4. Hosting: AWS vs on-premise?
+5. Monitoring: CloudWatch vs Datadog vs Prometheus?
+
+**Important (needed Week 1-4):**
+6. PII encryption: AWS KMS vs on-premise HSM?
+7. File storage: S3 vs local disk vs EFS?
+8. Data retention: 7 days vs 30 days vs 1 year?
+9. Test coverage target: 70% vs 80% vs 90%?
+10. DR setup: Single region vs multi-region?
+
+**Nice to have (can decide later):**
+11. CI/CD tool: GitHub Actions vs Jenkins vs CircleCI?
+12. Session storage: Redis vs Memcached vs in-memory?
+13. Rate limiting: API Gateway vs application-level vs WAF?
+
+**Engineering Lead requests:**
+- **Meeting with Product Manager:** Resolve 5 critical decisions (Week 1)
+- **Meeting with CISO:** Security requirements, encryption standards (Week 1)
+- **Meeting with Ops:** Hosting, DR, on-call rotation (Week 2)
+- **Architecture review:** Whiteboard session with team (Week 2)
+
+**Estimated engineering team:**
+- 1 Backend Engineer (API, validation logic, database)
+- 1 Frontend Engineer (UI, React, error cards)
+- 1 ML Engineer (AI model, training, serving)
+- 1 DevOps Engineer (infrastructure, CI/CD, monitoring)
+- 1 QA Engineer (tests, security, load testing)
+- **Total:** 5 engineers × 8 weeks = 40 engineer-weeks = ~$120k (matches budget)
