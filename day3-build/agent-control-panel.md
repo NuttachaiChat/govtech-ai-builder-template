@@ -1004,8 +1004,7 @@ Reality Check:
 | Generate strong warning (90%+) | Create ⚠️ warning card with 3-checkbox acknowledgment | draft | ? | Based on Test #1 RERUN: 92% confidence → 3 checkboxes required |
 | Generate stop condition message | Create "Officer Review Required" message for escalation | draft | ? | Based on Test #2, #5 RERUN: Foreign language, policy citation |
 | Generate safety check refusal | Create "System Unavailable" generic error (hides real data detection) | draft | ? | Based on Test #3: Real data → generic error, no details exposed |
-| Generate unanswerable question response | Create "I cannot confirm..." message with ICA resources | draft | block | ✓ DECISION #3: Block (escalate all) - agent should escalate unanswerable questions to officer |
-| Escalate unanswerable question to officer | Route questions outside context to officer queue for answer | write | auto | ✓ DECISION #3: Auto - all questions agent cannot answer must escalate |
+| Generate unanswerable question response | Create "I cannot confirm..." message with ICA resources | draft | auto | ✓ DECISION #3 REVISED: Auto - directs to website/hotline, validation continues (officer queue not a help desk) |
 | Display error message to applicant | Show error card in UI (applicant sees it) | send | ? | Based on all tests: Core function, user-facing |
 | Update error message template | Change approved error message wording (e.g., "may not" → "likely does not") | write | ? | Templates are "Sacred" per handoff-note.md |
 
@@ -1164,12 +1163,17 @@ Reality Check:
    - **DECISION:** Auto - safety check must be immediate, no delay for PDPA protection
    - **Why:** 2-second block protects PII before any human sees it
 
-3. **Unanswerable Question Handling: ESCALATE ALL ✓**
+3. **Unanswerable Question Handling: AUTO (REVISED) ✓**
    - Test #6: Agent answered "I cannot confirm" automatically (auto)
-   - Alternative chosen: Escalate all unanswerable questions
-   - **DECISION:** Escalate all - agent should not leave questions hanging
-   - **New behavior:** Agent blocks "Generate unanswerable question response", must "Escalate unanswerable question to officer" instead
-   - **Trade-off:** More officer questions, but citizens get real answers
+   - Alternative rejected: Escalate all unanswerable questions (officer queue not a help desk)
+   - **DECISION:** Auto - agent provides generic response and directs to appropriate resources
+   - **BUSINESS OWNER OBJECTION:** Original "escalate all" decision would:
+     - Route general policy questions to officer queue (wrong resource)
+     - Delay valid applications waiting for answers to questions (Test #6: 19s → 1-2 days)
+     - Unknown volume (could be 3,000 questions/week = officer workload explosion)
+     - Officers cost $50/hour, support staff cost $20/hour (wrong triage)
+   - **What agent does:** "I cannot confirm... check ICA website or call 6391-6100" + complete validation
+   - **Why this works:** Questions go to Support Center, applications proceed, officers focus on errors
 
 4. **Empty Enquiry Checklist: AUTO ✓**
    - Test #4: Agent showed all 5 errors automatically (auto, faster)
@@ -1192,7 +1196,7 @@ Reality Check:
 
 1. ✅ **Escalates policy citations** (confirm) → Officer verifies before agent proceeds
 2. ✅ **Refuses real data automatically** (auto) → 2-second block, no PII risk
-3. ✅ **Escalates all unanswerable questions** (escalate) → No "I cannot confirm" responses, officer answers
+3. ✅ **Provides generic response for unanswerable questions** (auto) → "I cannot confirm, check ICA website/hotline", validation continues
 4. ✅ **Shows all missing doc errors at once** (auto) → Better UX for empty enquiries
 5. ✅ **Requires Director approval for threshold changes** (confirm) → Protects against arbitrary changes
 

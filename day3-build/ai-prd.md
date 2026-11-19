@@ -855,7 +855,78 @@ Red Flags:
 
 ---
 
-**These 10 open decisions must be resolved before full production launch. Some can wait until pilot data is available (Week 16), others must be decided sooner (Week 1-4).**
+---
+
+### Decision 11: Unanswerable Question Handling (ADDED BY BUSINESS OWNER)
+
+**Question:** When agent cannot answer a citizen's question (e.g., "Can I use MyInfo digital copy?"), should it:
+A) Provide generic response + direct to ICA resources (auto)
+B) Escalate ALL questions to officer queue (escalate)
+
+**✅ DECIDED: Option A - Generic response + ICA resources (AUTO)**
+
+**Business Owner Objection to Option B (escalate all):**
+
+Test #6 showed original behavior (Option A) was GOOD:
+- Citizen asks: "Can I submit MyInfo digital copy vs paper certificate?"
+- Agent: "I cannot confirm... check ICA website or call 6391-6100"
+- Agent: "Your application is ready to submit" (validation completed in 19 seconds)
+- **Application proceeds, question directed to appropriate resource**
+
+**Option B would create 4 problems:**
+
+1. **Officer Queue Is NOT a Help Desk**
+   - Officers review APPLICATION ERRORS (missing docs, photo compliance)
+   - Policy questions belong to Support Center ($20/hour), not officers ($50/hour)
+   - Wrong triage = expensive resource for simple questions
+
+2. **Unknown Volume = Budget Risk**
+   - How many citizens ask questions outside validation? Unknown
+   - Could be 1% (150/week, manageable) or 20% (3,000/week, crisis)
+   - **Risk: Agent INCREASES officer workload instead of reducing it**
+   - Cannot launch without knowing volume
+
+3. **Delays Valid Applications**
+   - Test #6 application: ALL documents verified, ready to submit
+   - Option A: Submit in 19 seconds
+   - Option B: Wait 1-2 days in officer queue for answer to QUESTION (not error)
+   - Citizen frustrated: "My application was fine, why am I waiting?"
+
+4. **ICA Already Has Question Resources**
+   - Website: www.ica.gov.sg/passport-requirements
+   - Hotline: 6391-6100 (staffed by Support Center)
+   - Walk-in service for complex questions
+   - Agent directing to these is CORRECT behavior
+
+**What Option A does (auto):**
+- Agent: "I can verify your documents are complete..."
+- Agent: "However, I cannot confirm [specific policy question]"
+- Agent: "For official guidance, check ICA website or call 6391-6100"
+- Agent: "Your application is ready to submit" (validation proceeds)
+- **Application moves forward, question handled by appropriate channel**
+
+**Why this is the right decision:**
+- Validation agent validates APPLICATIONS
+- Support Center answers QUESTIONS
+- Each resource stays in scope
+- Officer workload focused on application errors only
+
+**Pilot measurement:** Track question rate during pilot
+- If <5% ask questions: Option A is working well
+- If >10% ask questions: May need FAQ section or agent training on common questions
+- If questions are same 5-10 topics: Add those to agent's context
+
+**Cost implication:**
+- Option A: $0 extra (current ICA support resources handle questions)
+- Option B: Unknown (could be $0 or $150k/year if 3,000 questions/week × $1/question)
+
+**Approved by:** Director of Passport Services (business owner)
+
+**Implementation note:** Agent permission "Generate unanswerable question response" = AUTO (not BLOCK). Test #6 behavior is correct and should not change.
+
+---
+
+**These 11 open decisions (10 original + 1 added by business owner) must be resolved before full production launch. Some can wait until pilot data is available (Week 16), others must be decided sooner (Week 1-4).**
 
 ---
 
