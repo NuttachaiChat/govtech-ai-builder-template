@@ -155,6 +155,52 @@ The agent checks for:
 **Details:** See day3-build/agent-control-panel.md for full decision authority matrix
 
 ## Roles and operating model
+
+### Roles
+
+**Decision-Makers:**
+- **Director of Passport Services** - Business owner, accountable for agent outcomes, approves scope/go-live/retire
+- **Product Lead** - Day-to-day agent operations, approves permissions/error messages/tactical changes
+- **Engineering Lead** - Technical infrastructure, deployment, API changes
+- **ML Lead** - AI model performance, approves vendor/model selection, confidence thresholds, retraining
+- **Operations Manager** - Officer workload distribution, queue management, incident response (Level 1-2 killswitch)
+- **CISO** - Security, PII protection, fraud escalation approval
+
+**Contributors:** UX Team (error templates, user testing), ICA Officers (validate flagged applications, feedback), Legal Team (policy changes, name verification rules), Customer Support (track citizen complaints, confusion patterns)
+
+**Informed:** Applicants/Citizens (experience agent prompts), Minister's Office (high-level metrics), Audit Team (compliance, PDPA)
+
+### Decision Rights
+
+| Decision | Who Decides | Who is Consulted |
+|----------|-------------|------------------|
+| **Scope** (Add/remove validation checks, new document types) | Director of Passport Services | Product Lead, Operations Manager, Legal Team |
+| **Permissions** (Change auto/confirm/block, adjust 95%/80% thresholds, 20% kill switch) | Product Lead | Director, Operations Manager, ML Lead |
+| **Vendor/Model** (Switch AI provider, retrain with new data) | ML Lead | Engineering Lead, CISO, Product Lead |
+| **Go-Live** (Launch to production, enable for all citizens) | Director of Passport Services | Product Lead, Ops Manager, Engineering, ML, CISO, Minister |
+| **Incident** (Killswitch activation, rollback, investigate wrong answer) | Operations Manager (L1-2), Director (L3) | Product Lead, ML Lead, Engineering Lead |
+| **Retire** (Decommission agent, return to manual validation) | Director of Passport Services | Product Lead, Operations Manager, Engineering Lead |
+
+### Incident Response (If Agent Gives Wrong Answer)
+
+**Who acts first:** Operations Manager (duty officer on 24/7 rotation)
+- Reviews case within 5 minutes
+- Isolated (1-4 cases) → Flag for Product Lead, continue monitoring
+- Widespread (≥5 cases in 1 hour) → Activate Level 1 killswitch
+
+**Who switches off (3 escalating levels):**
+1. **Level 1 (Operations Manager):** Feature flag, AI validation disabled, <5 min response
+2. **Level 2 (Product Lead):** Maintenance mode, agent offline, manual processing
+3. **Level 3 (Director):** Emergency shutdown, Minister notified, investigation launched
+
+**Who tells business owner:**
+- Isolated: Ops Manager → Product Lead (30 min) → Director (end of day)
+- Widespread: Ops Manager → Director (immediate, 15 min) → Minister (if >50 cases)
+- Public/Legal: Director → Minister (<15 min), CISO → Legal → PDPA (72 hrs if breach)
+
+**Post-incident:** Root cause analysis within 3 days, lessons learned, prevent recurrence, quarterly review of all incidents
+
+**Details:** See day3-build/operating-model.md for full incident response playbook
 ## Strategy and roadmap
 
 ### Strategy Kernel
