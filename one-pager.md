@@ -215,5 +215,22 @@ The agent checks for:
 3. Applicant able to make correct edits
 ## Metrics plan and stop line
 ## Evals and gates
-## Decision: continue, pivot or stop
 ## Open issues
+
+**From evaluation (19 Nov 2026):**
+
+1. **User control validation incomplete** - Only 4 cases tested D2 (user control on AI warnings). Need to verify 3-option pattern (Replace/Keep/Review) and 3-checkbox strong warning flow work in real application UI, not just agent logic.
+
+2. **Production correlation unknown** - Evaluation shows 15/15 pass with synthetic data, but no evidence yet that eval scores predict production outcomes. Need to track: Do D5=4.9 clarity scores actually correlate with <10% support call increase?
+
+3. **Test case coverage gaps** - Evaluation found agent handles 15 scenarios correctly, but production Week 1-2 may surface new patterns not in test cases (e.g., watermarked documents, low-quality scans). Plan to add Case 16+ as patterns emerge.
+
+4. **Calibration not yet proven** - Only 1 reviewer (Claude) scored all 15 cases. Inter-rater reliability unknown until 3 human reviewers complete calibration on 5 anchor cases. Target: 100% agreement on D1-D4, need to verify achievable.
+
+5. **Weekly sample sustainability** - Operations Manager assigned to run 5 anchor cases weekly (1 hour). Risk: If weekly sample becomes "check the box" without real scrutiny, regressions slip through. Need accountability mechanism.
+
+## Decision: continue, pivot or stop
+
+**Decision:** CONTINUE to pilot (5% of applications, ~750 cases/week)
+
+**Why:** Agent passed 15/15 evaluation cases with 0 deal-breaker failures, demonstrating correct behavior on mandatory errors (D1), user control (D2), cultural sensitivity (D3), escalation (D4), and message clarity (D5=4.9/5). Risk is bounded: 5% pilot limits blast radius, weekly anchor evaluations catch regressions, and 4 killswitch triggers (dismissal >30%, override >20%, support calls +10%, PII exposure) provide stop lines if production behavior diverges from evaluation predictions.
