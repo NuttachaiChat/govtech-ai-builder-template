@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICA Passport Validator - Live Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .demo-header {
+            background: #1C3F6E; /* ICA Blue */
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .demo-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .scenario-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .demo-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px;
+        }
+
+        .sidebar h3 {
+            font-size: 16px;
+            color: #1C3F6E;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .scenario-list {
+            list-style: none;
+        }
+
+        .scenario-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            font-size: 14px;
+        }
+
+        .scenario-item:hover {
+            background: white;
+            border-color: #1C3F6E;
+        }
+
+        .scenario-item.active {
+            background: #1C3F6E;
+            color: white;
+            font-weight: 600;
+        }
+
+        .scenario-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: rgba(28,63,110,0.1);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 8px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .scenario-item.active .scenario-number {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .application-form {
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .form-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .form-label {
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .document-card {
+            background: #f8f9fa;
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .document-card.uploaded {
+            border-style: solid;
+            border-color: #28a745;
+            background: #f0f9f4;
+        }
+
+        .document-card.missing {
+            border-color: #C4122E;
+            background: #fff5f5;
+        }
+
+        .document-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .document-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .document-status {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .validation-panel {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .validation-panel.success {
+            border-color: #28a745;
+            background: #f0f9f4;
+        }
+
+        .validation-panel.error {
+            border-color: #C4122E;
+            background: #fff5f5;
+        }
+
+        .validation-panel.warning {
+            border-color: #ff9800;
+            background: #fff8f0;
+        }
+
+        .validation-panel.info {
+            border-color: #2196F3;
+            background: #f0f7ff;
+        }
+
+        .validation-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .validation-icon {
+            font-size: 32px;
+        }
+
+        .validation-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .validation-message {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .validation-list {
+            list-style: none;
+            margin-bottom: 16px;
+        }
+
+        .validation-list li {
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .validation-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: white;
+            border: 2px solid #ff9800;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .warning-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .warning-content {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .checkbox-group {
+            margin: 16px 0;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .checkbox-label input {
+            width: 20px;
+            height: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #1C3F6E;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #152e4f;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #1C3F6E;
+            border: 2px solid #1C3F6E;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f7ff;
+        }
+
+        .btn-danger {
+            background: #C4122E;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #9a0e24;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .timer {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(28,63,110,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1C3F6E;
+        }
+
+        .presenter-notes {
+            background: #fff9e6;
+            border-left: 4px solid #ff9800;
+            padding: 16px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+            border-radius: 4px;
+        }
+
+        .presenter-notes strong {
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .step-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .step-btn {
+            padding: 12px 24px;
+            background: #1C3F6E;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .step-btn:hover {
+            background: #152e4f;
+        }
+
+        .step-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>ICA Passport Application Validator - Live Demo</h1>
+            <div class="scenario-badge">All data is synthetic</div>
+        </div>
+
+        <div class="demo-content">
+            <div class="sidebar">
+                <h3>Demo Scenarios</h3>
+                <ul class="scenario-list">
+                    <li class="scenario-item active" data-scenario="1">
+                        <span class="scenario-number">1</span>
+                        Happy Path
+                    </li>
+                    <li class="scenario-item" data-scenario="2">
+                        <span class="scenario-number">2</span>
+                        Missing Document
+                    </li>
+                    <li class="scenario-item" data-scenario="3">
+                        <span class="scenario-number">3</span>
+                        AI Warning
+                    </li>
+                    <li class="scenario-item" data-scenario="4">
+                        <span class="scenario-number">4</span>
+                        Religious Headwear
+                    </li>
+                    <li class="scenario-item" data-scenario="5">
+                        <span class="scenario-number">5</span>
+                        Foreign Language
+                    </li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+                <div class="timer" id="timer">Time: 0s</div>
+
+                <!-- Scenario 1: Happy Path -->
+                <div id="scenario-1" class="scenario-content">
+                    <div class="application-form">
+                        <div class="form-section">
+                            <h4>Applicant Information</h4>
+                            <div class="form-row">
+                                <span class="form-label">Name:</span>
+                                <span>Chen Kai Wen (synthetic)</span>
+                            </div>
+                            <div class="form-row">
+                                <span class="form-label">Date of Birth:</span>
+                                <span>12 Sep 2018 (Age 8)</span>
+                            </div>
+                            <div class="form-row">
+                                <span class="form-label">Application Type:</span>
+                                <span>Child Passport Renewal</span>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Parent/Guardian</h4>
+                            <div class="form-row">
+                                <span class="form-label">Name:</span>
+                                <span>Chen Li Hua (synthetic)</span>
+                            </div>
+                            <div class="form-row">
+                                <span class="form-label">NRIC:</span>
+                                <span>S7890123A (synthetic)</span>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Documents</h4>
+                            <div class="documents-grid">
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📄</div>
+                                    <div class="document-name">Parent NRIC (Front)</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📄</div>
+                                    <div class="document-name">Parent NRIC (Back)</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📘</div>
+                                    <div class="document-name">Child's Passport</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📋</div>
+                                    <div class="document-name">Birth Certificate</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📸</div>
+                                    <div class="document-name">Passport Photo</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="validation-1" class="hidden">
+                        <div class="validation-panel success">
+                            <div class="validation-header">
+                                <div class="validation-icon">✅</div>
+                                <div class="validation-title">All documents verified</div>
+                            </div>
+                            <div class="validation-message">
+                                Your application is ready to submit:
+                            </div>
+                            <ul class="validation-list">
+                                <li>Parent NRIC verified</li>
+                                <li>Birth certificate verified</li>
+                                <li>Existing passport verified</li>
+                                <li>Photo meets requirements</li>
+                                <li>Name matches across all documents</li>
+                            </ul>
+                            <div class="button-group">
+                                <button class="btn btn-primary">Submit Application</button>
+                            </div>
+                        </div>
+
+                        <div class="presenter-notes">
+                            <strong>Presenter Note:</strong>
+                            In 8 seconds, agent validated all documents and name matching. 85% of applications (12,750/week) look like this. No errors, no warnings. User can submit immediately.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 2: Missing Document -->
+                <div id="scenario-2" class="scenario-content hidden">
+                    <div class="application-form">
+                        <div class="form-section">
+                            <h4>Applicant Information</h4>
+                            <div class="form-row">
+                                <span class="form-label">Name:</span>
+                                <span>Kumar Priya (synthetic)</span>
+                            </div>
+                            <div class="form-row">
+                                <span class="form-label">Date of Birth:</span>
+                                <span>25 Mar 2020 (Age 6)</span>
+                            </div>
+                            <div class="form-row">
+                                <span class="form-label">Application Type:</span>
+                                <span>Child Passport Renewal</span>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Documents</h4>
+                            <div class="documents-grid">
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📄</div>
+                                    <div class="document-name">Parent NRIC</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📘</div>
+                                    <div class="document-name">Child's Passport</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📸</div>
+                                    <div class="document-name">Passport Photo</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card missing">
+                                    <div class="document-icon">❌</div>
+                                    <div class="document-name">Birth Certificate</div>
+                                    <div class="document-status">Missing</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="validation-2" class="hidden">
+                        <div class="validation-panel error">
+                            <div class="validation-header">
+                                <div class="validation-icon">❌</div>
+                                <div class="validation-title">Birth Certificate not uploaded</div>
+                            </div>
+
+                            <div class="warning-box">
+                                <div class="warning-header">Why we need this:</div>
+                                <div class="warning-content">
+                                    For child passport renewals, ICA requires the birth certificate to verify parental consent and citizenship status.
+                                </div>
+                            </div>
+
+                            <div class="warning-box">
+                                <div class="warning-header">What to do:</div>
+                                <div class="warning-content">
+                                    Upload a clear photo or scan of your child's birth certificate. The document should show:
+                                    <ul style="margin: 8px 0 0 20px;">
+                                        <li>Child's full name</li>
+                                        <li>Date of birth</li>
+                                        <li>Parents' names</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="button-group">
+                                <button class="btn btn-primary" id="upload-btn-2">Upload Birth Certificate</button>
+                            </div>
+
+                            <div class="validation-message" style="margin-top: 16px; color: #C4122E; font-weight: 600;">
+                                ⚠️ You cannot submit until all mandatory documents are uploaded.
+                            </div>
+                        </div>
+
+                        <div class="presenter-notes">
+                            <strong>Presenter Note:</strong>
+                            Agent detected missing birth certificate in 5 seconds and blocked submission. Message explains WHY needed and WHAT to do. This prevents 2,550 incomplete submissions/week. DEAL-BREAKER: If agent allows submission without mandatory docs, defeats entire purpose.
+                        </div>
+                    </div>
+
+                    <div id="validation-2-fixed" class="hidden">
+                        <div class="validation-panel success">
+                            <div class="validation-header">
+                                <div class="validation-icon">✅</div>
+                                <div class="validation-title">Birth certificate verified</div>
+                            </div>
+                            <div class="validation-message">
+                                All documents now complete. Your application is ready to submit.
+                            </div>
+                            <div class="button-group">
+                                <button class="btn btn-primary">Submit Application</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 3: AI Warning -->
+                <div id="scenario-3" class="scenario-content hidden">
+                    <div class="application-form">
+                        <div class="form-section">
+                            <h4>Applicant Information</h4>
+                            <div class="form-row">
+                                <span class="form-label">Name:</span>
+                                <span>Wong Kai Ling (synthetic)</span>
+                            </div>
+                            <div class="form-row">
+                                <span class="form-label">Application Type:</span>
+                                <span>Child Passport Renewal</span>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Documents</h4>
+                            <div class="documents-grid">
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📄</div>
+                                    <div class="document-name">All Documents</div>
+                                    <div class="document-status">✓ 5/5 Uploaded</div>
+                                </div>
+                                <div class="document-card" style="border-color: #ff9800; background: #fff8f0;">
+                                    <div class="document-icon">⚠️</div>
+                                    <div class="document-name">Passport Photo</div>
+                                    <div class="document-status">Needs Review</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="validation-3" class="hidden">
+                        <div class="validation-panel warning">
+                            <div class="validation-header">
+                                <div class="validation-icon">⚠️</div>
+                                <div class="validation-title">Photo likely does not meet requirements</div>
+                            </div>
+
+                            <div class="warning-box">
+                                <div class="warning-header">Issue detected:</div>
+                                <div class="warning-content">
+                                    Background appears gray or off-white instead of pure white. ICA requires a plain white background for passport photos.
+                                    <br><br>
+                                    AI confidence: <span class="confidence-badge">94% (High)</span>
+                                </div>
+                            </div>
+
+                            <div class="warning-box">
+                                <div class="warning-header">Before you continue, please acknowledge:</div>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="check-1">
+                                        <span>I understand the photo may not meet ICA requirements</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="check-2">
+                                        <span>I understand my application may be rejected if photo is incorrect</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="check-3">
+                                        <span>I choose to submit this photo anyway</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="button-group">
+                                <button class="btn btn-secondary">Replace Photo</button>
+                                <button class="btn btn-primary" id="acknowledge-btn-3" disabled>Keep Photo & Acknowledge</button>
+                            </div>
+                        </div>
+
+                        <div class="presenter-notes">
+                            <strong>Presenter Note:</strong>
+                            Agent detected gray background at 94% confidence. Shows strong warning with 3 checkboxes. But NEVER blocks. User has control. This handles false positives gracefully. DEAL-BREAKER: If agent blocks at 94%, violates "never block on AI alone" principle.
+                        </div>
+                    </div>
+
+                    <div id="validation-3-acknowledged" class="hidden">
+                        <div class="validation-panel info">
+                            <div class="validation-header">
+                                <div class="validation-icon">✅</div>
+                                <div class="validation-title">Acknowledged</div>
+                            </div>
+                            <div class="validation-message">
+                                Your choice has been recorded.<br><br>
+                                This application will be reviewed by an ICA officer (HIGH priority review due to photo concern).<br><br>
+                                You can still submit your application.
+                            </div>
+                            <div class="button-group">
+                                <button class="btn btn-primary">Submit Application</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 4: Religious Headwear -->
+                <div id="scenario-4" class="scenario-content hidden">
+                    <div class="application-form">
+                        <div class="form-section">
+                            <h4>Applicant Information</h4>
+                            <div class="form-row">
+                                <span class="form-label">Name:</span>
+                                <span>Nurul Aisyah Binti Ahmad (synthetic)</span>
+                            </div>
+                            <div class="form-row">
+                                <span class="form-label">Date of Birth:</span>
+                                <span>18 Jun 2019 (Age 7)</span>
+                            </div>
+                            <div class="form-row">
+                                <span class="form-label">Application Type:</span>
+                                <span>Child Passport Renewal</span>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Documents</h4>
+                            <div class="documents-grid">
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📄</div>
+                                    <div class="document-name">Parent NRIC</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📋</div>
+                                    <div class="document-name">Birth Certificate</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📘</div>
+                                    <div class="document-name">Child's Passport</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded" style="border-color: #1C3F6E; border-width: 3px;">
+                                    <div class="document-icon">🧕</div>
+                                    <div class="document-name">Passport Photo</div>
+                                    <div class="document-status">✓ With Hijab</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="validation-4" class="hidden">
+                        <div class="validation-panel success">
+                            <div class="validation-header">
+                                <div class="validation-icon">✅</div>
+                                <div class="validation-title">All documents verified</div>
+                            </div>
+                            <div class="validation-message">
+                                Your application is ready to submit:
+                            </div>
+                            <ul class="validation-list">
+                                <li>Parent NRIC verified</li>
+                                <li>Birth certificate verified</li>
+                                <li>Existing passport verified</li>
+                                <li>Photo meets requirements (religious headwear allowed)</li>
+                                <li>Name matches across all documents</li>
+                            </ul>
+                            <div class="button-group">
+                                <button class="btn btn-primary">Submit Application</button>
+                            </div>
+                        </div>
+
+                        <div class="presenter-notes" style="background: #ffe6e6; border-color: #C4122E;">
+                            <strong>CRITICAL - Presenter Pause Here:</strong>
+                            The photo shows a hijab. Agent validated face is fully visible. ICA policy ALLOWS religious headwear - hijabs, turbans, kippah.
+                            <br><br>
+                            <strong style="color: #C4122E;">IF AGENT REJECTS THIS:</strong> National incident. "ICA AI tells Muslim girl to remove hijab" - discrimination lawsuit, community outrage, Minister in Parliament, political crisis.
+                            <br><br>
+                            Singapore: 15% Muslim, Sikh community, religious harmony is national value. ONE wrong rejection = disaster.
+                            <br><br>
+                            <strong>This is DEAL-BREAKER #6 - most critical case. Must pass 100% or DO NOT LAUNCH.</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario 5: Foreign Language -->
+                <div id="scenario-5" class="scenario-content hidden">
+                    <div class="application-form">
+                        <div class="form-section">
+                            <h4>Applicant Information</h4>
+                            <div class="form-row">
+                                <span class="form-label">Name:</span>
+                                <span>Schmidt Anna (synthetic)</span>
+                            </div>
+                            <div class="form-row">
+                                <span class="form-label">Application Type:</span>
+                                <span>Child Passport Renewal</span>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Documents</h4>
+                            <div class="documents-grid">
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📄</div>
+                                    <div class="document-name">Parent NRIC</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📘</div>
+                                    <div class="document-name">Child's Passport</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card uploaded">
+                                    <div class="document-icon">📸</div>
+                                    <div class="document-name">Passport Photo</div>
+                                    <div class="document-status">✓ Uploaded</div>
+                                </div>
+                                <div class="document-card" style="border-color: #2196F3; background: #f0f7ff;">
+                                    <div class="document-icon">🇩🇪</div>
+                                    <div class="document-name">Geburtsurkunde</div>
+                                    <div class="document-status">German</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="validation-5" class="hidden">
+                        <div class="validation-panel info">
+                            <div class="validation-header">
+                                <div class="validation-icon">⏸️</div>
+                                <div class="validation-title">Officer Review Required</div>
+                            </div>
+
+                            <div class="warning-box">
+                                <div class="warning-header">Document detected:</div>
+                                <div class="warning-content">
+                                    Birth certificate appears to be in German.
+                                </div>
+                            </div>
+
+                            <div class="warning-box">
+                                <div class="warning-header">What happens next:</div>
+                                <div class="warning-content">
+                                    Your application will be reviewed by an ICA officer who will verify the document and translate if needed.
+                                    <br><br>
+                                    <strong>Review time: 1-2 business days</strong>
+                                    <br><br>
+                                    You can still submit your application. An officer will contact you if additional documents are required.
+                                </div>
+                            </div>
+
+                            <div class="button-group">
+                                <button class="btn btn-primary">Submit for Officer Review</button>
+                            </div>
+                        </div>
+
+                        <div class="presenter-notes">
+                            <strong>Presenter Note:</strong>
+                            Agent detected German birth certificate in 6 seconds. Does NOT attempt validation (would produce errors). Escalates to Language Verification queue. User can submit, officer handles translation. Better than 6-day rejection loop.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="step-buttons">
+        <button class="step-btn" id="prev-btn" disabled>← Previous Step</button>
+        <button class="step-btn" id="next-btn">Next Step →</button>
+    </div>
+
+    <script>
+        let currentScenario = 1;
+        let currentStep = 0;
+        let timerInterval;
+        let seconds = 0;
+
+        const scenarios = {
+            1: { steps: 2, times: [0, 8] },
+            2: { steps: 3, times: [0, 5, 8] },
+            3: { steps: 3, times: [0, 12, 15] },
+            4: { steps: 2, times: [0, 9] },
+            5: { steps: 2, times: [0, 6] }
+        };
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            seconds = 0;
+            updateTimer();
+            timerInterval = setInterval(() => {
+                seconds++;
+                updateTimer();
+            }, 1000);
+        }
+
+        function updateTimer() {
+            document.getElementById('timer').textContent = `Time: ${seconds}s`;
+        }
+
+        function showScenario(num) {
+            document.querySelectorAll('.scenario-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`scenario-${num}`).classList.remove('hidden');
+
+            document.querySelectorAll('.scenario-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-scenario="${num}"]`).classList.add('active');
+
+            currentScenario = num;
+            currentStep = 0;
+            startTimer();
+            updateStepButtons();
+        }
+
+        function nextStep() {
+            const scenario = scenarios[currentScenario];
+            if (currentStep < scenario.steps - 1) {
+                currentStep++;
+                seconds = scenario.times[currentStep];
+                updateTimer();
+
+                if (currentScenario === 1) {
+                    if (currentStep === 1) document.getElementById('validation-1').classList.remove('hidden');
+                } else if (currentScenario === 2) {
+                    if (currentStep === 1) document.getElementById('validation-2').classList.remove('hidden');
+                    if (currentStep === 2) {
+                        document.getElementById('validation-2').classList.add('hidden');
+                        document.getElementById('validation-2-fixed').classList.remove('hidden');
+                    }
+                } else if (currentScenario === 3) {
+                    if (currentStep === 1) document.getElementById('validation-3').classList.remove('hidden');
+                    if (currentStep === 2) {
+                        document.getElementById('validation-3').classList.add('hidden');
+                        document.getElementById('validation-3-acknowledged').classList.remove('hidden');
+                    }
+                } else if (currentScenario === 4) {
+                    if (currentStep === 1) document.getElementById('validation-4').classList.remove('hidden');
+                } else if (currentScenario === 5) {
+                    if (currentStep === 1) document.getElementById('validation-5').classList.remove('hidden');
+                }
+
+                updateStepButtons();
+            } else if (currentScenario < 5) {
+                showScenario(currentScenario + 1);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                seconds = scenarios[currentScenario].times[currentStep];
+                updateTimer();
+
+                if (currentScenario === 1) {
+                    if (currentStep === 0) document.getElementById('validation-1').classList.add('hidden');
+                } else if (currentScenario === 2) {
+                    if (currentStep === 1) document.getElementById('validation-2-fixed').classList.add('hidden');
+                    if (currentStep === 0) document.getElementById('validation-2').classList.add('hidden');
+                    document.getElementById('validation-2').classList.remove('hidden');
+                } else if (currentScenario === 3) {
+                    if (currentStep === 1) document.getElementById('validation-3-acknowledged').classList.add('hidden');
+                    if (currentStep === 0) document.getElementById('validation-3').classList.add('hidden');
+                    document.getElementById('validation-3').classList.remove('hidden');
+                } else if (currentScenario === 4) {
+                    if (currentStep === 0) document.getElementById('validation-4').classList.add('hidden');
+                } else if (currentScenario === 5) {
+                    if (currentStep === 0) document.getElementById('validation-5').classList.add('hidden');
+                }
+
+                updateStepButtons();
+            } else if (currentScenario > 1) {
+                showScenario(currentScenario - 1);
+                currentStep = scenarios[currentScenario].steps - 1;
+            }
+        }
+
+        function updateStepButtons() {
+            document.getElementById('prev-btn').disabled = (currentScenario === 1 && currentStep === 0);
+            document.getElementById('next-btn').disabled = (currentScenario === 5 && currentStep === scenarios[5].steps - 1);
+        }
+
+        // Scenario navigation
+        document.querySelectorAll('.scenario-item').forEach(item => {
+            item.addEventListener('click', () => {
+                showScenario(parseInt(item.dataset.scenario));
+            });
+        });
+
+        // Step buttons
+        document.getElementById('next-btn').addEventListener('click', nextStep);
+        document.getElementById('prev-btn').addEventListener('click', prevStep);
+
+        // Scenario 2: Upload button
+        document.getElementById('upload-btn-2')?.addEventListener('click', () => {
+            nextStep();
+        });
+
+        // Scenario 3: Checkboxes
+        const checkboxes = [document.getElementById('check-1'), document.getElementById('check-2'), document.getElementById('check-3')];
+        const acknowledgeBtn = document.getElementById('acknowledge-btn-3');
+
+        checkboxes.forEach(cb => {
+            cb?.addEventListener('change', () => {
+                const allChecked = checkboxes.every(c => c.checked);
+                acknowledgeBtn.disabled = !allChecked;
+            });
+        });
+
+        acknowledgeBtn?.addEventListener('click', () => {
+            nextStep();
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextStep();
+            if (e.key === 'ArrowLeft') prevStep();
+        });
+
+        // Initialize
+        startTimer();
+    </script>
+</body>
+</html>
