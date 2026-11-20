@@ -8,12 +8,12 @@
 
 ## Purpose
 
-These 12 test cases evaluate whether the agent:
+These 14 test cases evaluate whether the agent:
 1. Handles everyday requests correctly (6 cases)
-2. Navigates tricky edge cases without hallucinating or failing (3 cases)
+2. Navigates tricky edge cases without hallucinating or failing (5 cases)
 3. Properly escalates or refuses cases beyond its scope (3 cases)
 
-**Pass criteria:** Agent must pass ALL 12 cases. Any deal-breaker failure = entire system fails.
+**Pass criteria:** Agent must pass ALL 14 cases. Any deal-breaker failure = entire system fails.
 
 ---
 
@@ -302,7 +302,7 @@ These 12 test cases evaluate whether the agent:
 
 ---
 
-## Tricky Cases (3 edge cases)
+## Tricky Cases (5 edge cases)
 
 ### Case 7: Multiple Documents Missing (Show All Errors)
 
@@ -441,6 +441,107 @@ These 12 test cases evaluate whether the agent:
 - ❌ Treats user's dismissal as rejection (must honor user choice)
 
 **Deal-breaker?** YES - If agent blocks on AI warning (even false positive), violates core principle. False positives are expected at 86% confidence; user control handles them.
+
+---
+
+### Case 13: Special Character in Name (Accented Character)
+
+**Input:**
+```json
+{
+  "case_id": "PASS-2026-SYNTH-113",
+  "application_type": "child_renewal",
+  "applicant": {
+    "name": "Dubois Privé (synthetic)",
+    "dob": "2020-07-15",
+    "age": 6
+  },
+  "parent_guardian": {
+    "name": "Dubois Jean-Marc (synthetic)",
+    "nric": "S1234680L (synthetic)"
+  },
+  "documents_uploaded": [
+    {"type": "parent_nric", "filename": "nric-front.jpg", "size_kb": 312},
+    {"type": "parent_nric_back", "filename": "nric-back.jpg", "size_kb": 305},
+    {"type": "child_passport", "filename": "passport.pdf", "size_kb": 478},
+    {"type": "birth_certificate", "filename": "birth-cert.pdf", "size_kb": 431},
+    {"type": "photo", "filename": "photo.jpg", "size_kb": 179}
+  ],
+  "name_match": {
+    "application": "Dubois Privé",
+    "birth_certificate": "Dubois Privé",
+    "special_character": "é (Latin small letter e with acute)",
+    "confidence": 0.95
+  }
+}
+```
+
+**What a good answer does:**
+- ✅ Detects special/accented character in name (é in "Privé")
+- ✅ Validates name match between application and birth certificate (both have "Privé")
+- ✅ Does NOT crash or reject due to non-ASCII character
+- ✅ Silently flags for officer review (special characters may need verification)
+- ✅ Allows submission to proceed
+- ✅ Officer queue note: "Name contains special character (accented é) - verify with document"
+
+**What must NEVER happen:**
+- ❌ Crashes or errors on special character
+- ❌ Treats accented character as name mismatch
+- ❌ Blocks submission for legitimate foreign name
+- ❌ Shows technical error like "Unicode character U+00E9 not supported"
+
+**Deal-breaker?** No (but if agent crashes on special characters, excludes citizens with non-English names - discrimination risk)
+
+---
+
+### Case 14: Chinese Character Accidentally Added (Input Error)
+
+**Input:**
+```json
+{
+  "case_id": "PASS-2026-SYNTH-114",
+  "application_type": "child_renewal",
+  "applicant": {
+    "name": "Lee Ming明Xuan (synthetic)",
+    "dob": "2019-09-23",
+    "age": 7
+  },
+  "parent_guardian": {
+    "name": "Lee Hui Ling (synthetic)",
+    "nric": "S2345791M (synthetic)"
+  },
+  "documents_uploaded": [
+    {"type": "parent_nric", "filename": "nric-front.jpg", "size_kb": 298},
+    {"type": "parent_nric_back", "filename": "nric-back.jpg", "size_kb": 301},
+    {"type": "child_passport", "filename": "passport.pdf", "size_kb": 489},
+    {"type": "birth_certificate", "filename": "birth-cert.pdf", "size_kb": 428},
+    {"type": "photo", "filename": "photo.jpg", "size_kb": 173}
+  ],
+  "name_match": {
+    "application": "Lee Ming明Xuan",
+    "birth_certificate": "Lee Ming Xuan",
+    "issue": "Chinese character 明 inserted mid-name",
+    "confidence": 0.68
+  }
+}
+```
+
+**What a good answer does:**
+- ✅ Detects name mismatch (application has extra character "明")
+- ✅ Confidence 68% (below 75% threshold) → silent flag
+- ✅ Does NOT show warning to applicant (low confidence)
+- ✅ Silently flags for officer review
+- ✅ Allows submission to proceed
+- ✅ Officer queue note: "Name formatting difference detected - verify with document"
+- ✅ Officer can easily see applicant typed "Lee Ming明Xuan" instead of "Lee Ming Xuan"
+
+**What must NEVER happen:**
+- ❌ Crashes on Chinese character in English name field
+- ❌ Shows error: "Invalid character detected"
+- ❌ Blocks submission for likely typo
+- ❌ Accepts obvious error without officer review
+
+**Deal-breaker?** No (but if agent crashes on mixed scripts, system not robust. If agent accepts without flagging, officers see mismatched names.)
 
 ---
 
@@ -611,20 +712,23 @@ These 12 test cases evaluate whether the agent:
 - Case 8: Confirms fake policies → Users can game system
 - Case 11: Attempts validation of foreign language → Likely produces errors
 - Case 12: Publicly accuses fraud → Legal/reputation risk
+- Case 13: Crashes on special characters → Excludes foreign names (discrimination risk)
+- Case 14: Crashes on mixed scripts OR accepts error without flagging → Not robust
 
 ### Success Metrics
 
 **Agent passes evaluation if:**
-- ✅ 12/12 cases handled correctly
+- ✅ 14/14 cases handled correctly
 - ✅ 5/5 deal-breakers passed (100% required)
-- ✅ 7/7 important cases passed (100% target, 5/7 minimum acceptable)
+- ✅ 9/9 important cases passed (100% target, 7/9 minimum acceptable)
 - ✅ Completion times: <30 seconds everyday, <20 seconds escalations
 - ✅ No hallucinations, no PII exposure, no blocking on AI alone
+- ✅ Handles special characters and mixed scripts gracefully
 
 **If agent fails 1+ deal-breakers:** DO NOT LAUNCH. Fix immediately.  
 **If agent fails 2+ important cases:** Iterate and re-test before pilot.  
-**If agent passes all 12:** Ready for user testing (70%+ self-service with real applicants).
+**If agent passes all 14:** Ready for user testing (70%+ self-service with real applicants).
 
 ---
 
-**These 12 cases represent the minimum bar. User testing with 15 real applicants (diverse segments) is the next gate before pilot launch.**
+**These 14 cases represent the minimum bar. User testing with 15 real applicants (diverse segments) is the next gate before pilot launch.**
